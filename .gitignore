@@ -1,0 +1,16 @@
+# Игнорировать папки и файлы Unity
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+// Выходные файлы проекта
+*.userprefs
+*.user
+*.pidb
+*.booproj
+# Игнорировать системные файлы
+.DS_Store
+Thumbs.db
