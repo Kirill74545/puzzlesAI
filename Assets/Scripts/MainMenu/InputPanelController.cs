@@ -14,7 +14,8 @@ public class InputPanelController : MonoBehaviour
     public Button randomButton; // Кнопка случайной генерации
 
     [Header("Дополнительное изображение")]
-    public GameObject additionalImage;       
+    public GameObject additionalImage;
+    public GameObject additionalImage_;
 
     [Header("Параметры анимации")]
     public float appearDuration = 0.5f;      // Длительность появления
@@ -24,6 +25,8 @@ public class InputPanelController : MonoBehaviour
     private RectTransform panelRectTransform;
     private CanvasGroup imageCanvasGroup;
     private RectTransform imageRectTransform;
+    private CanvasGroup imageCanvasGroup_;
+    private RectTransform imageRectTransform_;
 
     void Start()
     {
@@ -40,10 +43,21 @@ public class InputPanelController : MonoBehaviour
                 ?? additionalImage.AddComponent<CanvasGroup>();
         }
 
+        if (additionalImage_ != null)
+        {
+            imageRectTransform_ = additionalImage_.GetComponent<RectTransform>();
+            imageCanvasGroup_ = additionalImage_.GetComponent<CanvasGroup>()
+                ?? additionalImage_.AddComponent<CanvasGroup>();
+        }
+
         // Убеждаемся, что всё скрыто изначально
         inputPanel.SetActive(false);
         if (additionalImage != null)
             additionalImage.SetActive(false);
+
+        inputPanel.SetActive(false);
+        if (additionalImage_ != null)
+            additionalImage_.SetActive(false);
 
         if (confirmButton != null)
             confirmButton.gameObject.SetActive(false);
@@ -86,6 +100,8 @@ public class InputPanelController : MonoBehaviour
         inputPanel.SetActive(true);
         if (additionalImage != null)
             additionalImage.SetActive(true);
+        if (additionalImage_ != null)
+            additionalImage_.SetActive(true);
 
         // Сбрасываем начальные состояния
         panelRectTransform.localScale = Vector3.zero;
@@ -95,6 +111,12 @@ public class InputPanelController : MonoBehaviour
         {
             imageRectTransform.localScale = Vector3.zero;
             imageCanvasGroup.alpha = 0f;
+        }
+
+        if (additionalImage_ != null)
+        {
+            imageRectTransform_.localScale = Vector3.zero;
+            imageCanvasGroup_.alpha = 0f;
         }
 
         // Запускаем анимацию появления
@@ -151,6 +173,12 @@ public class InputPanelController : MonoBehaviour
                 imageCanvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
             }
 
+            if (additionalImage_ != null)
+            {
+                imageRectTransform_.localScale = Vector3.Lerp(Vector3.zero, targetScale, t);
+                imageCanvasGroup_.alpha = Mathf.Lerp(0f, 1f, t);
+            }
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -163,6 +191,12 @@ public class InputPanelController : MonoBehaviour
         {
             imageRectTransform.localScale = targetScale;
             imageCanvasGroup.alpha = 1f;
+        }
+
+        if (additionalImage_ != null)
+        {
+            imageRectTransform_.localScale = targetScale;
+            imageCanvasGroup_.alpha = 1f;
         }
     }
 
@@ -178,6 +212,8 @@ public class InputPanelController : MonoBehaviour
         inputPanel.SetActive(false);
         if (additionalImage != null)
             additionalImage.SetActive(false);
+        if (additionalImage_ != null)
+            additionalImage_.SetActive(false);
 
         startButton.gameObject.SetActive(true);
     }
