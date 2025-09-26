@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class InputPanelController : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class InputPanelController : MonoBehaviour
     public GameObject inputPanel;            // Основная панель ввода
     public TMP_InputField inputField;        // Поле ввода TextMeshPro
     public Button confirmButton;             // Кнопка подтверждения
+    public Button randomButton; // Кнопка случайной генерации
 
     [Header("Дополнительное изображение")]
     public GameObject additionalImage;       
@@ -43,12 +45,36 @@ public class InputPanelController : MonoBehaviour
         if (additionalImage != null)
             additionalImage.SetActive(false);
 
+        if (confirmButton != null)
+            confirmButton.gameObject.SetActive(false);
+
         // Подписка на события кнопок
         if (startButton != null)
             startButton.onClick.AddListener(OnStartButtonClicked);
 
+        if (randomButton != null)
+            randomButton.onClick.AddListener(OnRandomButtonClicked);
+
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmButtonClicked);
+
+        if (inputField != null)
+            inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+    }
+
+    void OnInputFieldValueChanged(string newText)
+    {
+        bool isEmpty = string.IsNullOrWhiteSpace(newText);
+
+        // Показываем кнопку подтверждения, если текст НЕ пустой
+        if (confirmButton != null)
+        {
+            confirmButton.gameObject.SetActive(!string.IsNullOrWhiteSpace(newText));
+        }
+
+        // Кнопка случайной генерации видна, если текст ПУСТОЙ
+        if (randomButton != null)
+            randomButton.gameObject.SetActive(isEmpty);
     }
 
     void OnStartButtonClicked()
@@ -73,6 +99,37 @@ public class InputPanelController : MonoBehaviour
 
         // Запускаем анимацию появления
         StartCoroutine(AppearUI());
+    }
+
+    void OnRandomButtonClicked()
+    {
+        TextAsset jsonFile = Resources.Load<TextAsset>("RandomValues");
+        if (jsonFile == null)
+        {
+            Debug.LogError("Файл RandomValues.json не найден в папке Resources!");
+            return;
+        }
+
+        string[] values = null;
+        try
+        {
+            values = JsonHelper.FromJson<string>(jsonFile.text);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Ошибка при парсинге JSON: " + e.Message);
+            return;
+        }
+
+        if (values == null || values.Length == 0)
+        {
+            Debug.LogWarning("JSON не содержит значений.");
+            return;
+        }
+
+        int randomIndex = UnityEngine.Random.Range(0, values.Length);
+        inputField.text = values[randomIndex];
+
     }
 
     IEnumerator AppearUI()
@@ -117,6 +174,7 @@ public class InputPanelController : MonoBehaviour
         // ЗДЕСЬ БУДЕТ ОБРАБАТЫВАТЬСЯ ВЫВОД
 
         // ВРЕМЕННОЕ СКРЫТИЕ =>
+        inputField.text = "";
         inputPanel.SetActive(false);
         if (additionalImage != null)
             additionalImage.SetActive(false);
