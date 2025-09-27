@@ -1,5 +1,6 @@
 # Игнорировать папки и файлы Unity
 .git/
+.utmp/
 .vs/
 Library/
 Temp/
