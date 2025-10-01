@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using Unity.VisualScripting;
 
 public class InputPanelController : MonoBehaviour
 {
@@ -16,10 +15,19 @@ public class InputPanelController : MonoBehaviour
     [Header("Дополнительное изображение")]
     public GameObject additionalImage;
     public GameObject additionalImage_;
+    public GameObject promptImage;
+
+    [Header("Загрузочный индикатор")]
+    public GameObject loadingIndicator;     
+
+    [Header("Кнопка после загрузки")]
+    public Button confirmButton2;           // Новая кнопка подтверждения после загрузки
 
     [Header("Параметры анимации")]
     public float appearDuration = 0.5f;      // Длительность появления
     public Vector2 targetScale = Vector2.one; // Конечный масштаб панели
+
+    private string savedInput;
 
     private CanvasGroup panelCanvasGroup;
     private RectTransform panelRectTransform;
@@ -27,6 +35,8 @@ public class InputPanelController : MonoBehaviour
     private RectTransform imageRectTransform;
     private CanvasGroup imageCanvasGroup_;
     private RectTransform imageRectTransform_;
+
+    private bool isRotating = false;
 
     void Start()
     {
@@ -55,12 +65,20 @@ public class InputPanelController : MonoBehaviour
         if (additionalImage != null)
             additionalImage.SetActive(false);
 
-        inputPanel.SetActive(false);
         if (additionalImage_ != null)
             additionalImage_.SetActive(false);
 
+        if (promptImage != null)
+            promptImage.SetActive(false);
+
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
+
         if (confirmButton != null)
             confirmButton.gameObject.SetActive(false);
+
+        if (confirmButton2 != null)
+            confirmButton2.gameObject.SetActive(false);
 
         // Подписка на события кнопок
         if (startButton != null)
@@ -202,19 +220,49 @@ public class InputPanelController : MonoBehaviour
 
     void OnConfirmButtonClicked()
     {
-        string userInput = inputField.text;
-        Debug.Log("Введено (TMP): " + userInput);
+        savedInput = inputField.text.Trim();
+        Debug.Log("Сохранено: " + savedInput);
 
-        // ЗДЕСЬ БУДЕТ ОБРАБАТЫВАТЬСЯ ВЫВОД
+        if (inputField != null)
+            inputField.gameObject.SetActive(false);
 
-        // ВРЕМЕННОЕ СКРЫТИЕ =>
         inputField.text = "";
-        inputPanel.SetActive(false);
-        if (additionalImage != null)
-            additionalImage.SetActive(false);
-        if (additionalImage_ != null)
-            additionalImage_.SetActive(false);
+        if (additionalImage_ != null) additionalImage_.SetActive(false);
+        if (confirmButton != null) confirmButton.gameObject.SetActive(false);
+        if (randomButton != null) randomButton.gameObject.SetActive(false);
 
-        startButton.gameObject.SetActive(true);
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(true);
+            StartCoroutine(RotateLoadingIndicator()); 
+        }
+
+        StartCoroutine(ProcessSubmission());
+    }
+
+    IEnumerator ProcessSubmission()
+    {
+        yield return new WaitForSeconds(7f);
+
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
+
+        if (promptImage != null)
+            promptImage.SetActive(true);
+
+        if (confirmButton2 != null)
+            confirmButton2.gameObject.SetActive(true);
+    }
+
+    IEnumerator RotateLoadingIndicator()
+    {
+        isRotating = true;
+        RectTransform rect = loadingIndicator.GetComponent<RectTransform>();
+
+        while (isRotating)
+        {
+            rect.Rotate(0, 0, -180 * Time.deltaTime);
+            yield return null;
+        }
     }
 }
