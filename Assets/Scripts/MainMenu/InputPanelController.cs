@@ -23,11 +23,23 @@ public class InputPanelController : MonoBehaviour
     [Header("Кнопка после загрузки")]
     public Button confirmButton2;           // Новая кнопка подтверждения после загрузки
 
+    [Header("Кнопки выбора")]
+    public Button classikButton;            
+    public Button randomChoiceButton;
+
+    [Header("Кнопки уровней сложности")]
+    public Button level1Button;            
+    public Button level2Button;            
+    public Button level3Button;           
+    public Button level4Button;             
+
     [Header("Параметры анимации")]
     public float appearDuration = 0.5f;      // Длительность появления
     public Vector2 targetScale = Vector2.one; // Конечный масштаб панели
 
     private string savedInput;
+    private string selectedChoice;          
+    private string selectedLevel;
 
     private CanvasGroup panelCanvasGroup;
     private RectTransform panelRectTransform;
@@ -80,6 +92,21 @@ public class InputPanelController : MonoBehaviour
         if (confirmButton2 != null)
             confirmButton2.gameObject.SetActive(false);
 
+        if (classikButton != null)
+            classikButton.gameObject.SetActive(false);
+
+        if (randomChoiceButton != null)
+            randomChoiceButton.gameObject.SetActive(false);
+
+        if (level1Button != null)
+            level1Button.gameObject.SetActive(false);
+        if (level2Button != null)
+            level2Button.gameObject.SetActive(false);
+        if (level3Button != null)
+            level3Button.gameObject.SetActive(false);
+        if (level4Button != null)
+            level4Button.gameObject.SetActive(false);
+
         // Подписка на события кнопок
         if (startButton != null)
             startButton.onClick.AddListener(OnStartButtonClicked);
@@ -89,6 +116,21 @@ public class InputPanelController : MonoBehaviour
 
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmButtonClicked);
+
+        if (classikButton != null)
+            classikButton.onClick.AddListener(() => OnChoiceSelected("classik"));
+
+        if (randomChoiceButton != null)
+            randomChoiceButton.onClick.AddListener(() => OnChoiceSelected("random"));
+
+        if (level1Button != null)
+            level1Button.onClick.AddListener(() => OnLevelSelected("level1"));
+        if (level2Button != null)
+            level2Button.onClick.AddListener(() => OnLevelSelected("level2"));
+        if (level3Button != null)
+            level3Button.onClick.AddListener(() => OnLevelSelected("level3"));
+        if (level4Button != null)
+            level4Button.onClick.AddListener(() => OnLevelSelected("level4"));
 
         if (inputField != null)
             inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
@@ -252,6 +294,7 @@ public class InputPanelController : MonoBehaviour
 
         if (confirmButton2 != null)
             confirmButton2.gameObject.SetActive(true);
+            confirmButton2.onClick.AddListener(OnConfirmButton2Clicked);
     }
 
     IEnumerator RotateLoadingIndicator()
@@ -264,5 +307,76 @@ public class InputPanelController : MonoBehaviour
             rect.Rotate(0, 0, -180 * Time.deltaTime);
             yield return null;
         }
+    }
+
+    void OnConfirmButton2Clicked()
+    {
+        confirmButton2.gameObject.SetActive(false);
+        promptImage.SetActive(false);
+
+        if (classikButton != null)
+            classikButton.gameObject.SetActive(true);
+        if (randomChoiceButton != null)
+            randomChoiceButton.gameObject.SetActive(true);
+    }
+
+    void OnChoiceSelected(string choice)
+    {
+        selectedChoice = choice;
+        Debug.Log("Выбрано: " + selectedChoice);
+
+        if (classikButton != null)
+            classikButton.gameObject.SetActive(false);
+        if (randomChoiceButton != null)
+            randomChoiceButton.gameObject.SetActive(false);
+
+        if (level1Button != null)
+            level1Button.gameObject.SetActive(true);
+        if (level2Button != null)
+            level2Button.gameObject.SetActive(true);
+        if (level3Button != null)
+            level3Button.gameObject.SetActive(true);
+        if (level4Button != null)
+            level4Button.gameObject.SetActive(true);
+    }
+
+    void OnLevelSelected(string level)
+    {
+        selectedLevel = level;
+        Debug.Log("Выбран уровень: " + selectedLevel);
+
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(true);
+            StartCoroutine(RotateLoadingIndicator());
+        }
+
+        if (level1Button != null)
+            level1Button.gameObject.SetActive(false);
+        if (level2Button != null)
+            level2Button.gameObject.SetActive(false);
+        if (level3Button != null)
+            level3Button.gameObject.SetActive(false);
+        if (level4Button != null)
+            level4Button.gameObject.SetActive(false);
+
+        StartCoroutine(ProcessSecondLoading());
+    }
+
+    IEnumerator ProcessSecondLoading()
+    {
+        yield return new WaitForSeconds(5f);
+
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(false);
+            isRotating = false; 
+        }
+
+
+        PlayerPrefs.SetString("SavedInput", savedInput);
+        PlayerPrefs.Save();
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
     }
 }

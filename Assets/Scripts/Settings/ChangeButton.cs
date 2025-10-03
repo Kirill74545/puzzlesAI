@@ -10,22 +10,34 @@ public class ChangeButtonSprite : MonoBehaviour
     }
 
     [SerializeField] private ToggleType toggleType;
-    [SerializeField] private Sprite[] sprites; // Массив спрайтов для переключения
+    [SerializeField] private Sprite[] sprites;
+
     private Image buttonImage;
     private AudioManager audioManager;
 
     void Start()
     {
         buttonImage = GetComponent<Image>();
-        audioManager = AudioManager.Instance;
 
-        UpdateButtonSprite();
+        // Проверяем, доступен ли Instance
+        if (AudioManager.Instance != null)
+        {
+            audioManager = AudioManager.Instance;
+            UpdateButtonSprite();
+        }
+        else
+        {
+            Debug.LogError("AudioManager.Instance не найден!");
+        }
     }
 
-    // Этот метод вызывается при нажатии кнопки (назначается в инспекторе)
     public void OnButtonClick()
     {
-        if (audioManager == null) return;
+        if (audioManager == null)
+        {
+            Debug.LogWarning("AudioManager недоступен!");
+            return;
+        }
 
         if (toggleType == ToggleType.Music)
         {
@@ -41,8 +53,10 @@ public class ChangeButtonSprite : MonoBehaviour
 
     private void UpdateButtonSprite()
     {
+        if (audioManager == null) return;
+
         bool isOn = (toggleType == ToggleType.Music) ? audioManager.musicOn : audioManager.soundOn;
-        int index = isOn ? 1 : 0; 
+        int index = isOn ? 1 : 0;
 
         if (index < sprites.Length)
         {

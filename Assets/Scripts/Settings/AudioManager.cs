@@ -22,11 +22,14 @@ public class AudioManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
 
         if (musicSource == null)
         {
-            musicSource = Object.FindFirstObjectByType<AudioSource>();
+            musicSource = gameObject.AddComponent<AudioSource>();
+            musicSource.playOnAwake = false;
+            musicSource.loop = true;
         }
 
         ApplyMusicVolume();
@@ -50,13 +53,13 @@ public class AudioManager : MonoBehaviour
     {
         if (musicSource != null)
         {
-            musicSource.mute = !musicOn; 
+            musicSource.mute = !musicOn;
         }
     }
 
     public void ApplySoundVolume()
     {
-        
+        // Заглушка для будущего
     }
 
     private void SaveSettings()
@@ -70,7 +73,5 @@ public class AudioManager : MonoBehaviour
     {
         musicOn = PlayerPrefs.GetInt("MusicOn", 1) == 1;
         soundOn = PlayerPrefs.GetInt("SoundOn", 1) == 1;
-        ApplyMusicVolume();
-        ApplySoundVolume();
     }
 }
