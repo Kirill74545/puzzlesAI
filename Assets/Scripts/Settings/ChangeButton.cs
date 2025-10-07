@@ -25,10 +25,6 @@ public class ChangeButtonSprite : MonoBehaviour
             audioManager = AudioManager.Instance;
             UpdateButtonSprite();
         }
-        else
-        {
-            Debug.LogError("AudioManager.Instance не найден!");
-        }
     }
 
     public void OnButtonClick()
