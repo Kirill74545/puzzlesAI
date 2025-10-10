@@ -130,6 +130,8 @@ GameObject:
   - component: {fileID: 96310009}
   - component: {fileID: 96310012}
   - component: {fileID: 96310011}
+  - component: {fileID: 96310013}
+  - component: {fileID: 96310014}
   m_Layer: 0
   m_Name: Puzzle1 (6)
   m_TagString: Untagged
@@ -194,6 +196,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 96310008}
   m_CullTransparentMesh: 1
+--- !u!114 &96310013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 96310008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &96310014
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 96310008}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &219140272
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,6 +442,8 @@ GameObject:
   - component: {fileID: 483331814}
   - component: {fileID: 483331816}
   - component: {fileID: 483331815}
+  - component: {fileID: 483331817}
+  - component: {fileID: 483331818}
   m_Layer: 0
   m_Name: Puzzle1 (1)
   m_TagString: Untagged
@@ -480,6 +508,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 483331813}
   m_CullTransparentMesh: 1
+--- !u!114 &483331817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 483331813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &483331818
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 483331813}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -628,6 +680,7 @@ GameObject:
   - component: {fileID: 546791502}
   - component: {fileID: 546791504}
   - component: {fileID: 546791503}
+  - component: {fileID: 546791505}
   m_Layer: 0
   m_Name: DropZone
   m_TagString: DropZone
@@ -644,15 +697,15 @@ RectTransform:
   m_GameObject: {fileID: 546791501}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -17280}
-  m_LocalScale: {x: 5, y: 5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1083169416}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0060424805, y: 140.70996}
-  m_SizeDelta: {x: -747.19, y: -1733.77}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -0.000045776, y: 117.42}
+  m_SizeDelta: {x: 1080, y: 912.84}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &546791503
 MonoBehaviour:
@@ -692,6 +745,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 546791501}
   m_CullTransparentMesh: 1
+--- !u!114 &546791505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 546791501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e11bf87f632f62f4faf57b7ba7029f4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropZone
+  rectTransform: {fileID: 546791502}
 --- !u!1 &579968862
 GameObject:
   m_ObjectHideFlags: 0
@@ -1221,6 +1287,8 @@ GameObject:
   - component: {fileID: 958281081}
   - component: {fileID: 958281084}
   - component: {fileID: 958281083}
+  - component: {fileID: 958281085}
+  - component: {fileID: 958281086}
   m_Layer: 0
   m_Name: Puzzle1 (5)
   m_TagString: Untagged
@@ -1285,6 +1353,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958281080}
   m_CullTransparentMesh: 1
+--- !u!114 &958281085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958281080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &958281086
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958281080}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1029380589
 GameObject:
   m_ObjectHideFlags: 0
@@ -1512,7 +1604,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1905519001}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.49733132
+  m_Size: 0.49733138
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1645,6 +1737,8 @@ GameObject:
   - component: {fileID: 1297371851}
   - component: {fileID: 1297371853}
   - component: {fileID: 1297371852}
+  - component: {fileID: 1297371854}
+  - component: {fileID: 1297371855}
   m_Layer: 0
   m_Name: Puzzle1 (2)
   m_TagString: Untagged
@@ -1709,6 +1803,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297371850}
   m_CullTransparentMesh: 1
+--- !u!114 &1297371854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297371850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &1297371855
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297371850}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1345536495
 GameObject:
   m_ObjectHideFlags: 0
@@ -1720,6 +1838,8 @@ GameObject:
   - component: {fileID: 1345536496}
   - component: {fileID: 1345536498}
   - component: {fileID: 1345536497}
+  - component: {fileID: 1345536499}
+  - component: {fileID: 1345536500}
   m_Layer: 0
   m_Name: Puzzle1 (4)
   m_TagString: Untagged
@@ -1784,6 +1904,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1345536495}
   m_CullTransparentMesh: 1
+--- !u!114 &1345536499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1345536495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &1345536500
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1345536495}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1415984630
 GameObject:
   m_ObjectHideFlags: 0
@@ -1795,6 +1939,8 @@ GameObject:
   - component: {fileID: 1415984631}
   - component: {fileID: 1415984633}
   - component: {fileID: 1415984632}
+  - component: {fileID: 1415984634}
+  - component: {fileID: 1415984635}
   m_Layer: 0
   m_Name: Puzzle1
   m_TagString: Untagged
@@ -1819,7 +1965,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 18.944, y: 19.128}
+  m_SizeDelta: {x: 18.944, y: 19.127998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1415984632
 MonoBehaviour:
@@ -1859,6 +2005,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1415984630}
   m_CullTransparentMesh: 1
+--- !u!114 &1415984634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1415984630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &1415984635
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1415984630}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1622312250
 GameObject:
   m_ObjectHideFlags: 0
@@ -2095,6 +2265,8 @@ GameObject:
   - component: {fileID: 1934703434}
   - component: {fileID: 1934703436}
   - component: {fileID: 1934703435}
+  - component: {fileID: 1934703437}
+  - component: {fileID: 1934703438}
   m_Layer: 0
   m_Name: Puzzle1 (3)
   m_TagString: Untagged
@@ -2159,6 +2331,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1934703433}
   m_CullTransparentMesh: 1
+--- !u!114 &1934703437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934703433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e0395de016aa047a9e05a61077915b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleDrag
+--- !u!225 &1934703438
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934703433}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1950770638
 GameObject:
   m_ObjectHideFlags: 0
