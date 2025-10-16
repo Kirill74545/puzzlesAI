@@ -78,4 +78,47 @@ public class DropZone : MonoBehaviour
         // Если достаточно углов внутри дропзоны
         return cornersInside >= 4 * requiredOverlap;
     }
+
+    // Возвращает позицию (в локальных координатах DropZone), куда можно поместить dragged,
+    // чтобы он полностью влез и был как можно ближе к его текущей позиции.
+    public Vector2 GetClampedPositionInside(RectTransform dragged)
+    {
+        // Размеры детали
+        Vector2 pieceSize = dragged.rect.size;
+
+        // Текущая позиция детали в локальных координатах DropZone
+        Vector3[] corners = new Vector3[4];
+        dragged.GetWorldCorners(corners);
+        Vector2 worldCenter = (corners[0] + corners[2]) / 2f; // центр детали в мировых координатах
+
+        Vector2 localCenter;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                rectTransform,
+                uiCamera.WorldToScreenPoint(worldCenter),
+                uiCamera,
+                out localCenter))
+        {
+            // Если не можем преобразовать — используем центр DropZone как fallback
+            localCenter = Vector2.zero;
+        }
+
+        // Определяем допустимые границы для центра детали
+        float halfWidth = pieceSize.x / 2f;
+        float halfHeight = pieceSize.y / 2f;
+
+        Rect safeArea = new Rect(
+            rectTransform.rect.xMin + halfWidth,
+            rectTransform.rect.yMin + halfHeight,
+            rectTransform.rect.width - pieceSize.x,
+            rectTransform.rect.height - pieceSize.y
+        );
+
+        // Кладём центр детали в безопасную зону
+        Vector2 clampedCenter = new Vector2(
+            Mathf.Clamp(localCenter.x, safeArea.xMin, safeArea.xMax),
+            Mathf.Clamp(localCenter.y, safeArea.yMin, safeArea.yMax)
+        );
+
+        return clampedCenter;
+    }
 }
