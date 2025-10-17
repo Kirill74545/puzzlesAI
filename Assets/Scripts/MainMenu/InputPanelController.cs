@@ -289,6 +289,8 @@ public class InputPanelController : MonoBehaviour
         if (loadingIndicator != null)
             loadingIndicator.SetActive(false);
 
+        SetPromptImage(savedInput);
+
         if (promptImage != null)
             promptImage.SetActive(true);
 
@@ -363,6 +365,33 @@ public class InputPanelController : MonoBehaviour
         StartCoroutine(ProcessSecondLoading());
     }
 
+    void SetPromptImage(string imageName)
+    {
+        if (promptImage == null)
+        {
+            Debug.LogWarning("promptImage не назначен в инспекторе!");
+            return;
+        }
+
+        Sprite loadedSprite = Resources.Load<Sprite>(imageName);
+
+        if (loadedSprite == null)
+        {
+            Debug.Log($"Изображение '{imageName}' не найдено. Используется 'banana'.");
+            loadedSprite = Resources.Load<Sprite>("banana");
+        }
+
+        Image imageComponent = promptImage.GetComponent<Image>();
+        if (imageComponent != null)
+        {
+            imageComponent.sprite = loadedSprite;
+        }
+        else
+        {
+            Debug.LogError("promptImage не содержит компонент Image!");
+        }
+    }
+
     IEnumerator ProcessSecondLoading()
     {
         yield return new WaitForSeconds(5f);
@@ -375,8 +404,10 @@ public class InputPanelController : MonoBehaviour
 
 
         PlayerPrefs.SetString("SavedInput", savedInput);
+        PlayerPrefs.SetString("SelectedLevel", selectedLevel);
         PlayerPrefs.Save();
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
     }
+
 }

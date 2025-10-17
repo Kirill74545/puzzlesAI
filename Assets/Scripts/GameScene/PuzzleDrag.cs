@@ -19,6 +19,8 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
     private bool isInDropZone = false;
     private Vector2 dropZonePosition;
 
+    public Vector2 targetSizeInDropZone;
+
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -75,17 +77,17 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log("OnBeginDrag сработал на " + name);
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
         DropZone dropZone = Object.FindFirstObjectByType<DropZone>();
-
         bool shouldAttach = false;
         Vector2 targetPosition = Vector2.zero;
 
         if (dropZone != null)
         {
-            // Проверяем пересечение: хотя бы 1 угол внутри ИЛИ центр внутри
+            // Проверка пересечения
             Vector3[] corners = new Vector3[4];
             rectTransform.GetWorldCorners(corners);
             int insideCount = 0;
@@ -102,7 +104,6 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
                 }
             }
 
-            // Также проверим центр
             Vector2 center = (corners[0] + corners[2]) / 2f;
             Vector2 localCenter;
             bool centerInside = RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -111,7 +112,6 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
                     uiCamera,
                     out localCenter) && dropZone.rectTransform.rect.Contains(localCenter);
 
-            // Если хотя бы один угол или центр внутри — считаем, что пересекается
             if (insideCount > 0 || centerInside)
             {
                 shouldAttach = true;
@@ -119,17 +119,16 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             }
         }
 
-        if (shouldAttach)
+        if (shouldAttach && dropZone != null)
         {
-            // Прикрепляем к DropZone и устанавливаем скорректированную позицию
-            rectTransform.SetParent(dropZone.transform, false); // false — не сохранять мировую позицию
+            rectTransform.SetParent(dropZone.transform, false);
             rectTransform.anchoredPosition = targetPosition;
 
-            // Сохраняем размер и масштаб
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize.x);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, originalSize.y);
-            rectTransform.localScale = originalLocalScale;
+            // Устанавливаем размер под ячейку сетки
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
 
+            rectTransform.localScale = Vector3.one;
             isInDropZone = true;
             dropZonePosition = targetPosition;
         }
@@ -145,7 +144,6 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             }
         }
 
-        // Гарантируем, что Z-координата сброшена после любого действия
         ResetZPosition();
     }
 
