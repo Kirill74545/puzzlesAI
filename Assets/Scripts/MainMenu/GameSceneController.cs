@@ -1,71 +1,37 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class GameSceneDisplayController : MonoBehaviour
 {
-    [Header("UI элемент для отображения названия")]
-    public TextMeshProUGUI titleText;       
-    public Text titleTextLegacy;            
-
-    [Header("Кнопка для теста перехода обратно")]
-    public Button backButton;               
-
-    private string savedInput;              
+    public TextMeshProUGUI titleText;
+    public Text titleTextLegacy;
+    public Button backButton;
 
     void Start()
     {
-        savedInput = PlayerPrefs.GetString("SavedInput", "Название не найдено");
+        string input = GameData.InputMode;
 
-        DisplaySavedInput();
+        string displayText = (input == "user image") ? "" : input;
+
+        if (titleText != null)
+            titleText.text = displayText;
+        else if (titleTextLegacy != null)
+            titleTextLegacy.text = displayText;
+
+        Debug.Log("Отображено название: " + displayText);
 
         if (backButton != null)
             backButton.onClick.AddListener(BackToMainMenu);
     }
 
-    void DisplaySavedInput()
-    {
-        if (titleText != null)
-        {
-            titleText.text = savedInput;
-        }
-        else if (titleTextLegacy != null)
-        {
-            titleTextLegacy.text = savedInput;
-        }
-        else
-        {
-            Debug.LogWarning("Ни TextMeshProUGUI, ни обычный Text не заданы для отображения названия!");
-        }
-
-        Debug.Log("Отображено название: " + savedInput);
-    }
-
-    public void SetSavedInput(string input)
-    {
-        savedInput = input;
-        PlayerPrefs.SetString("SavedInput", savedInput);
-        PlayerPrefs.Save();
-
-        if (titleText != null)
-        {
-            titleText.text = savedInput;
-        }
-        else if (titleTextLegacy != null)
-        {
-            titleTextLegacy.text = savedInput;
-        }
-    }
-
     void BackToMainMenu()
     {
-        PlayerPrefs.DeleteKey("SavedInput"); 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(0); 
+        GameData.UserImage = null;
+        GameData.InputMode = "";
+        GameData.SelectedLevel = "";
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
-    void OnDestroy()
-    {
-        PlayerPrefs.SetString("SavedInput", savedInput);
-        PlayerPrefs.Save();
-    }
 }

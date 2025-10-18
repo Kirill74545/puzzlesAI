@@ -20,48 +20,53 @@ public class PuzzleGenerator : MonoBehaviour
 
     void Start()
     {
-        imageName = PlayerPrefs.GetString("SavedInput", "default_puzzle");
-        selectedLevel = PlayerPrefs.GetString("SelectedLevel", "level1");
+        Debug.Log("PuzzleGenerator: Запуск генерации пазла");
+
+        string inputMode = GameData.InputMode;
+        string selectedLevel = GameData.SelectedLevel;
+
+        Debug.Log($"InputMode: '{inputMode}', Level: '{selectedLevel}'");
 
         // Определяем размер сетки
         switch (selectedLevel)
         {
-            case "level1": gridSize = 5; break;   // 25
-            case "level2": gridSize = 11; break;  // 121
-            case "level3": gridSize = 14; break;  // 196
-            case "level4": gridSize = 16; break;  // 256
+            case "level1": gridSize = 5; break;
+            case "level2": gridSize = 11; break;
+            case "level3": gridSize = 14; break;
+            case "level4": gridSize = 16; break;
             default: gridSize = 5; break;
         }
 
-        LoadTextureFromResources();
+        // Загружаем изображение
+        if (inputMode == "user image")
+        {
+            fullTexture = GameData.UserImage;
+            Debug.Log(fullTexture != null
+                ? $"Получено пользовательское изображение: {fullTexture.width}x{fullTexture.height}"
+                : "UserImage is NULL!");
+        }
+        else
+        {
+            LoadTextureFromResources(inputMode);
+        }
+
         if (fullTexture != null)
         {
             GeneratePuzzle();
         }
         else
         {
-            Debug.LogError($"Изображение '{imageName}' не найдено в Resources!");
+            Debug.LogError("Не удалось получить изображение для пазла!");
         }
     }
 
-    void LoadTextureFromResources()
+    void LoadTextureFromResources(string imageName)
     {
-        // Пытаемся загрузить как Texture2D
         fullTexture = Resources.Load<Texture2D>(imageName);
-
-        // Если не получилось — пробуем как Sprite (иногда так хранят)
         if (fullTexture == null)
         {
             Sprite sprite = Resources.Load<Sprite>(imageName);
-            if (sprite != null)
-            {
-                fullTexture = sprite.texture;
-            }
-        }
-
-        if (fullTexture == null)
-        {
-            Debug.LogError($"Не удалось загрузить изображение '{imageName}' из папки Resources.");
+            if (sprite != null) fullTexture = sprite.texture;
         }
     }
 
@@ -148,6 +153,43 @@ public class PuzzleGenerator : MonoBehaviour
                 // Для отладки
                 Debug.Log($"Пазл {row},{col} создан в позиции: {rt.anchoredPosition}");
             }
+        }
+    }
+
+    Texture2D LoadUserImageFromPlayerPrefs()
+    {
+        if (!PlayerPrefs.HasKey("UserImageData"))
+        {
+            Debug.LogWarning("Нет сохранённого пользовательского изображения.");
+            return null;
+        }
+
+        string base64Data = PlayerPrefs.GetString("UserImageData");
+        if (string.IsNullOrEmpty(base64Data))
+        {
+            Debug.LogWarning("Пустые данные пользовательского изображения.");
+            return null;
+        }
+
+        try
+        {
+            byte[] bytes = System.Convert.FromBase64String(base64Data);
+            Texture2D texture = new Texture2D(2, 2); // dummy size
+            if (texture.LoadImage(bytes))
+            {
+                Debug.Log($"Пользовательское изображение загружено: {texture.width}x{texture.height}");
+                return texture;
+            }
+            else
+            {
+                Debug.LogError("Не удалось декодировать изображение из base64.");
+                return null;
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Ошибка при загрузке пользовательского изображения: " + e.Message);
+            return null;
         }
     }
 

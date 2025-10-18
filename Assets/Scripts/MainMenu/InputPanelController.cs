@@ -10,7 +10,8 @@ public class InputPanelController : MonoBehaviour
     public GameObject inputPanel;            // Основная панель ввода
     public TMP_InputField inputField;        // Поле ввода TextMeshPro
     public Button confirmButton;             // Кнопка подтверждения
-    public Button randomButton; // Кнопка случайной генерации
+    public Button randomButton;              // Кнопка случайной генерации
+    public Button userImageButton;           // Кнопка загрузки своего изображения
 
     [Header("Дополнительное изображение")]
     public GameObject additionalImage;
@@ -18,28 +19,29 @@ public class InputPanelController : MonoBehaviour
     public GameObject promptImage;
 
     [Header("Загрузочный индикатор")]
-    public GameObject loadingIndicator;     
+    public GameObject loadingIndicator;
 
     [Header("Кнопка после загрузки")]
     public Button confirmButton2;           // Новая кнопка подтверждения после загрузки
 
     [Header("Кнопки выбора")]
-    public Button classikButton;            
+    public Button classikButton;
     public Button randomChoiceButton;
 
     [Header("Кнопки уровней сложности")]
-    public Button level1Button;            
-    public Button level2Button;            
-    public Button level3Button;           
-    public Button level4Button;             
+    public Button level1Button;
+    public Button level2Button;
+    public Button level3Button;
+    public Button level4Button;
 
     [Header("Параметры анимации")]
     public float appearDuration = 0.5f;      // Длительность появления
     public Vector2 targetScale = Vector2.one; // Конечный масштаб панели
 
     private string savedInput;
-    private string selectedChoice;          
+    private string selectedChoice;
     private string selectedLevel;
+    private Texture2D userTexture;          // Текстура пользовательского изображения
 
     private CanvasGroup panelCanvasGroup;
     private RectTransform panelRectTransform;
@@ -107,6 +109,9 @@ public class InputPanelController : MonoBehaviour
         if (level4Button != null)
             level4Button.gameObject.SetActive(false);
 
+        if (userImageButton != null)
+            userImageButton.gameObject.SetActive(false);
+
         // Подписка на события кнопок
         if (startButton != null)
             startButton.onClick.AddListener(OnStartButtonClicked);
@@ -132,6 +137,9 @@ public class InputPanelController : MonoBehaviour
         if (level4Button != null)
             level4Button.onClick.AddListener(() => OnLevelSelected("level4"));
 
+        if (userImageButton != null)
+            userImageButton.onClick.AddListener(OnUserImageButtonClicked);
+
         if (inputField != null)
             inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
     }
@@ -149,6 +157,10 @@ public class InputPanelController : MonoBehaviour
         // Кнопка случайной генерации видна, если текст ПУСТОЙ
         if (randomButton != null)
             randomButton.gameObject.SetActive(isEmpty);
+
+        // Кнопка загрузки изображения видна, если текст ПУСТОЙ
+        if (userImageButton != null)
+            userImageButton.gameObject.SetActive(isEmpty);
     }
 
     void OnStartButtonClicked()
@@ -178,6 +190,9 @@ public class InputPanelController : MonoBehaviour
             imageRectTransform_.localScale = Vector3.zero;
             imageCanvasGroup_.alpha = 0f;
         }
+
+        if (inputField != null)
+            OnInputFieldValueChanged(inputField.text);
 
         // Запускаем анимацию появления
         StartCoroutine(AppearUI());
@@ -211,7 +226,6 @@ public class InputPanelController : MonoBehaviour
 
         int randomIndex = UnityEngine.Random.Range(0, values.Length);
         inputField.text = values[randomIndex];
-
     }
 
     IEnumerator AppearUI()
@@ -265,26 +279,92 @@ public class InputPanelController : MonoBehaviour
         savedInput = inputField.text.Trim();
         Debug.Log("Сохранено: " + savedInput);
 
-        if (inputField != null)
-            inputField.gameObject.SetActive(false);
-
-        inputField.text = "";
-        if (additionalImage_ != null) additionalImage_.SetActive(false);
-        if (confirmButton != null) confirmButton.gameObject.SetActive(false);
-        if (randomButton != null) randomButton.gameObject.SetActive(false);
+        HideInputElements();
 
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(true);
-            StartCoroutine(RotateLoadingIndicator()); 
+            StartCoroutine(RotateLoadingIndicator());
         }
 
         StartCoroutine(ProcessSubmission());
     }
 
+    void OnUserImageButtonClicked()
+    {
+        // Скрываем стандартные элементы ввода
+        HideInputElements();
+
+        // Запрашиваем изображение из галереи
+        #if UNITY_ANDROID && !UNITY_EDITOR
+        NativeGallery.GetImageFromGallery((path) =>
+    {
+        if (path != null)
+        {
+            Texture2D texture = NativeGallery.LoadImageAtPath(path, maxSize: 1024);
+            if (texture != null)
+            {
+                userTexture = texture;
+                savedInput = "user image";
+                Debug.Log("Выбрано пользовательское изображение");
+
+                if (loadingIndicator != null)
+                {
+                    loadingIndicator.SetActive(true);
+                    StartCoroutine(RotateLoadingIndicator());
+                }
+
+                StartCoroutine(ProcessUserImageSubmission());
+            }
+            else
+            {
+                Debug.LogError("Не удалось загрузить изображение из галереи");
+                ShowInputElements();
+            }
+        }
+        else
+        {
+            Debug.Log("Пользователь отменил выбор изображения");
+            ShowInputElements();
+        }
+    }, "Выберите изображение", "image/*");
+    #else
+        // Эмуляция в редакторе Unity
+        Debug.Log("В редакторе Unity функционал галереи недоступен");
+        userTexture = new Texture2D(256, 256);
+        savedInput = "user image";
+
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(true);
+            StartCoroutine(RotateLoadingIndicator());
+        }
+
+        StartCoroutine(ProcessUserImageSubmission());
+    #endif
+    }
+
+    void HideInputElements()
+    {
+        if (inputField != null) inputField.gameObject.SetActive(false);
+        if (randomButton != null) randomButton.gameObject.SetActive(false);
+        if (confirmButton != null) confirmButton.gameObject.SetActive(false);
+        if (userImageButton != null) userImageButton.gameObject.SetActive(false);
+        if (additionalImage_ != null) additionalImage_.SetActive(false);
+    }
+
+    void ShowInputElements()
+    {
+        if (inputField != null) inputField.gameObject.SetActive(true);
+        if (additionalImage_ != null) additionalImage_.SetActive(true);
+
+        // Обновляем видимость кнопок в зависимости от содержимого поля
+        OnInputFieldValueChanged(inputField.text);
+    }
+
     IEnumerator ProcessSubmission()
     {
-        yield return new WaitForSeconds(7f);
+        yield return new WaitForSeconds(2f);
 
         if (loadingIndicator != null)
             loadingIndicator.SetActive(false);
@@ -295,8 +375,31 @@ public class InputPanelController : MonoBehaviour
             promptImage.SetActive(true);
 
         if (confirmButton2 != null)
+        {
             confirmButton2.gameObject.SetActive(true);
+            confirmButton2.onClick.RemoveAllListeners();
             confirmButton2.onClick.AddListener(OnConfirmButton2Clicked);
+        }
+    }
+
+    IEnumerator ProcessUserImageSubmission()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
+
+        SetUserPromptImage();
+
+        if (promptImage != null)
+            promptImage.SetActive(true);
+
+        if (confirmButton2 != null)
+        {
+            confirmButton2.gameObject.SetActive(true);
+            confirmButton2.onClick.RemoveAllListeners();
+            confirmButton2.onClick.AddListener(OnConfirmButton2Clicked);
+        }
     }
 
     IEnumerator RotateLoadingIndicator()
@@ -313,8 +416,11 @@ public class InputPanelController : MonoBehaviour
 
     void OnConfirmButton2Clicked()
     {
-        confirmButton2.gameObject.SetActive(false);
-        promptImage.SetActive(false);
+        if (confirmButton2 != null)
+            confirmButton2.gameObject.SetActive(false);
+
+        if (promptImage != null)
+            promptImage.SetActive(false);
 
         if (classikButton != null)
             classikButton.gameObject.SetActive(true);
@@ -392,22 +498,55 @@ public class InputPanelController : MonoBehaviour
         }
     }
 
+    void SetUserPromptImage()
+    {
+        if (promptImage == null || userTexture == null)
+        {
+            Debug.LogWarning("promptImage или userTexture не назначены!");
+            return;
+        }
+
+        Image imageComponent = promptImage.GetComponent<Image>();
+        if (imageComponent != null)
+        {
+            // Создаем спрайт из пользовательской текстуры
+            Sprite userSprite = Sprite.Create(userTexture,
+                new Rect(0, 0, userTexture.width, userTexture.height),
+                Vector2.one * 0.5f);
+
+            imageComponent.sprite = userSprite;
+            Debug.Log("Установлено пользовательское изображение");
+        }
+        else
+        {
+            Debug.LogError("promptImage не содержит компонент Image!");
+        }
+    }
+
     IEnumerator ProcessSecondLoading()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
 
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(false);
-            isRotating = false; 
+            isRotating = false;
         }
 
+        GameData.InputMode = savedInput; 
+        GameData.SelectedLevel = selectedLevel;
 
-        PlayerPrefs.SetString("SavedInput", savedInput);
-        PlayerPrefs.SetString("SelectedLevel", selectedLevel);
-        PlayerPrefs.Save();
+        if (savedInput == "user image" && userTexture != null)
+        {
+            GameData.UserImage = userTexture;
+            Debug.Log("Пользовательское изображение передано в GameData");
+        }
+        else
+        {
+            GameData.UserImage = null;
+        }
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
     }
-
 }
+
