@@ -107,7 +107,7 @@ public class PuzzleGenerator : MonoBehaviour
             }
             else
             {
-                viewportRT = dropZone.rectTransform; 
+                viewportRT = dropZone.rectTransform;
             }
         }
 
@@ -145,8 +145,9 @@ public class PuzzleGenerator : MonoBehaviour
                 if (dragHandler != null)
                 {
                     dragHandler.targetSizeInDropZone = new Vector2(cellWidth, cellHeight);
+                    dragHandler.targetRow = row;
+                    dragHandler.targetCol = col; 
                 }
-
                 // Позиция внутри Viewport'а
                 rt.anchoredPosition = Vector2.zero;
 

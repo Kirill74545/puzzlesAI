@@ -5,6 +5,7 @@ public class DropZone : MonoBehaviour
 {
     public RectTransform rectTransform;
     private Camera uiCamera;
+    public int gridSize = 5;
 
     void Start()
     {
@@ -77,6 +78,32 @@ public class DropZone : MonoBehaviour
 
         // Если достаточно углов внутри дропзоны
         return cornersInside >= 4 * requiredOverlap;
+    }
+
+    public Vector2Int GetCellAtWorldPosition(Vector3 worldPosition, int gridSize)
+    {
+        Vector2 localPoint;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                rectTransform,
+                uiCamera.WorldToScreenPoint(worldPosition),
+                uiCamera,
+                out localPoint))
+        {
+            return new Vector2Int(-1, -1); // Недопустимая ячейка
+        }
+
+        // Преобразуем локальную позицию в индексы ячейки
+        float cellWidth = rectTransform.rect.width / gridSize;
+        float cellHeight = rectTransform.rect.height / gridSize;
+
+        int col = Mathf.FloorToInt((localPoint.x - rectTransform.rect.xMin) / cellWidth);
+        int row = Mathf.FloorToInt((rectTransform.rect.yMax - localPoint.y) / cellHeight); // yMax → сверху вниз
+
+        // Ограничиваем диапазон
+        col = Mathf.Clamp(col, 0, gridSize - 1);
+        row = Mathf.Clamp(row, 0, gridSize - 1);
+
+        return new Vector2Int(col, row);
     }
 
     // Возвращает позицию (в локальных координатах DropZone), куда можно поместить dragged,

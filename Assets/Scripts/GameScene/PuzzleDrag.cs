@@ -16,10 +16,15 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
     private Vector3 originalLocalScale;
     private Vector2 originalSize;
 
-    private bool isInDropZone = false;
     private Vector2 dropZonePosition;
 
     public Vector2 targetSizeInDropZone;
+
+    public int targetRow;
+    public int targetCol;
+    public bool isCorrectlyPlaced = false;
+    private bool wasPlacedInDropZone = false;
+    private Vector2 dropZonePositionWhenPlaced;
 
     void Start()
     {
@@ -35,17 +40,20 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (isCorrectlyPlaced)
+            return;
+
         originalAnchoredPosition = rectTransform.anchoredPosition;
         originalParent = transform.parent;
         originalSiblingIndex = transform.GetSiblingIndex();
         originalLocalScale = rectTransform.localScale;
         originalSize = rectTransform.rect.size;
 
-        isInDropZone = (originalParent.GetComponent<DropZone>() != null);
+        wasPlacedInDropZone = (originalParent.GetComponent<DropZone>() != null);
 
-        if (isInDropZone)
+        if (wasPlacedInDropZone)
         {
-            dropZonePosition = rectTransform.anchoredPosition;
+            dropZonePositionWhenPlaced = rectTransform.anchoredPosition;
         }
 
         rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -77,66 +85,80 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log("OnBeginDrag сработал на " + name);
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
         DropZone dropZone = Object.FindFirstObjectByType<DropZone>();
-        bool shouldAttach = false;
-        Vector2 targetPosition = Vector2.zero;
+        bool isInsideDropZone = false;
+        bool isCorrectPlacement = false;
+        Vector2 dropPosition = Vector2.zero;
 
         if (dropZone != null)
         {
-            // Проверка пересечения
-            Vector3[] corners = new Vector3[4];
-            rectTransform.GetWorldCorners(corners);
-            int insideCount = 0;
-            foreach (var corner in corners)
-            {
-                Vector2 local;
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        dropZone.rectTransform,
-                        uiCamera.WorldToScreenPoint(corner),
-                        uiCamera,
-                        out local) && dropZone.rectTransform.rect.Contains(local))
-                {
-                    insideCount++;
-                }
-            }
-
-            Vector2 center = (corners[0] + corners[2]) / 2f;
-            Vector2 localCenter;
-            bool centerInside = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            // Получаем позицию отпускания в локальных координатах DropZone
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     dropZone.rectTransform,
-                    uiCamera.WorldToScreenPoint(center),
+                    eventData.position,
                     uiCamera,
-                    out localCenter) && dropZone.rectTransform.rect.Contains(localCenter);
-
-            if (insideCount > 0 || centerInside)
+                    out dropPosition))
             {
-                shouldAttach = true;
-                targetPosition = dropZone.GetClampedPositionInside(rectTransform);
+                if (dropZone.rectTransform.rect.Contains(dropPosition))
+                {
+                    isInsideDropZone = true;
+
+                    // Определяем, какая ячейка под этой позицией
+                    Vector3 worldPoint = uiCamera.ScreenToWorldPoint(eventData.position);
+                    Vector2Int currentCell = dropZone.GetCellAtWorldPosition(worldPoint, dropZone.gridSize);
+
+                    if (currentCell.x == targetCol && currentCell.y == targetRow)
+                    {
+                        isCorrectPlacement = true;
+                    }
+                }
             }
         }
 
-        if (shouldAttach && dropZone != null)
+        if (isInsideDropZone && dropZone != null)
         {
+            // Всегда остаёмся в DropZone
             rectTransform.SetParent(dropZone.transform, false);
-            rectTransform.anchoredPosition = targetPosition;
+            rectTransform.localScale = Vector3.one;
 
-            // Устанавливаем размер под ячейку сетки
+            // Устанавливаем размер
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
 
-            rectTransform.localScale = Vector3.one;
-            isInDropZone = true;
-            dropZonePosition = targetPosition;
+            if (isCorrectPlacement)
+            {
+                // Приклеиваем точно по центру своей ячейки 
+                float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
+                float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
+
+                Vector2 perfectPosition = new Vector2(
+                    dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
+                    dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
+                );
+
+                rectTransform.anchoredPosition = perfectPosition;
+                isCorrectlyPlaced = true;
+                this.enabled = false; // больше нельзя тащить
+                Debug.Log($"Пазл [{targetRow},{targetCol}] приклеен!");
+            }
+            else
+            {
+                rectTransform.anchoredPosition = dropPosition;
+                isCorrectlyPlaced = false;
+                // Можно снова тащить
+            }
+
+            wasPlacedInDropZone = true;
+            dropZonePositionWhenPlaced = rectTransform.anchoredPosition;
         }
         else
         {
-            if (isInDropZone)
+            if (wasPlacedInDropZone)
             {
-                ReturnToDropZone();
+                ReturnToDropZonePosition();
             }
             else
             {
@@ -144,29 +166,20 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             }
         }
 
+
         ResetZPosition();
     }
 
-    private void AttachToDropZone(DropZone dropZone, Vector2 targetPosition)
-    {
-        rectTransform.SetParent(dropZone.transform, false);
-        rectTransform.anchoredPosition = targetPosition;
-        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize.x);
-        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, originalSize.y);
-        rectTransform.localScale = Vector3.one;
-    }
-
-
-    private void ReturnToDropZone()
+    private void ReturnToDropZonePosition()
     {
         DropZone dropZone = Object.FindFirstObjectByType<DropZone>();
         if (dropZone != null)
         {
             rectTransform.SetParent(dropZone.transform, false);
-            rectTransform.anchoredPosition = dropZonePosition;
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize.x);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, originalSize.y);
-            rectTransform.localScale = Vector3.one; // 🔥
+            rectTransform.anchoredPosition = dropZonePositionWhenPlaced;
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
+            rectTransform.localScale = Vector3.one;
         }
         else
         {
