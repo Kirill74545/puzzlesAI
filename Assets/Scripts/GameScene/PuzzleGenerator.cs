@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class PuzzleGenerator : MonoBehaviour
 {
@@ -17,6 +18,14 @@ public class PuzzleGenerator : MonoBehaviour
     private int gridSize;
     private Texture2D fullTexture;
 
+    [Header("Таймер")]
+    public TextMeshProUGUI timerText; 
+
+    private float elapsedTime = 0f;
+    private bool isTimerRunning = false;
+    private int totalPieces = 0;
+    private int correctlyPlacedCount = 0;
+
 
     void Start()
     {
@@ -30,11 +39,11 @@ public class PuzzleGenerator : MonoBehaviour
         // Определяем размер сетки
         switch (selectedLevel)
         {
-            case "level1": gridSize = 5; break;
-            case "level2": gridSize = 11; break;
-            case "level3": gridSize = 14; break;
-            case "level4": gridSize = 16; break;
-            default: gridSize = 5; break;
+            case "level1": gridSize = 4; break;   // 4x4 = 16
+            case "level2": gridSize = 5; break;   // 5x5 = 25
+            case "level3": gridSize = 7; break;   // 7x7 = 49
+            case "level4": gridSize = 9; break;   // 9x9 = 81
+            default: gridSize = 4; break;
         }
 
         // Загружаем изображение
@@ -60,6 +69,41 @@ public class PuzzleGenerator : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (isTimerRunning)
+        {
+            elapsedTime += Time.deltaTime;
+            UpdateTimerDisplay();
+        }
+    }
+
+    void UpdateTimerDisplay()
+    {
+        if (timerText == null) return;
+        int minutes = Mathf.FloorToInt(elapsedTime / 60);
+        int seconds = Mathf.FloorToInt(elapsedTime % 60);
+        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
+
+    public void RegisterCorrectPlacement()
+    {
+        correctlyPlacedCount++;
+        if (correctlyPlacedCount >= totalPieces)
+        {
+            isTimerRunning = false;
+            OnPuzzleCompleted();
+        }
+    }
+
+    void OnPuzzleCompleted()
+    {
+        PlayerPrefs.SetFloat("LastPuzzleTime", elapsedTime);
+        PlayerPrefs.SetString("LastCompletedLevel", GameData.SelectedLevel);
+        PlayerPrefs.Save();
+        Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
+    }
+
     void LoadTextureFromResources(string imageName)
     {
         fullTexture = Resources.Load<Texture2D>(imageName);
@@ -72,6 +116,11 @@ public class PuzzleGenerator : MonoBehaviour
 
     void GeneratePuzzle()
     {
+        if (dropZone != null)
+        {
+            dropZone.gridSize = gridSize; 
+        }
+
         if (fullTexture == null || dropZone == null || puzzlePiecePrefab == null)
         {
             Debug.LogError("Недостаточно данных для генерации пазла.");
@@ -114,47 +163,86 @@ public class PuzzleGenerator : MonoBehaviour
         float viewportWidth = viewportRT.rect.width;
         float viewportHeight = viewportRT.rect.height;
 
+        // Шаг 1: Собираем все ячейки
+        List<Vector2Int> cells = new List<Vector2Int>();
         for (int row = 0; row < gridSize; row++)
         {
             for (int col = 0; col < gridSize; col++)
             {
-                Rect spriteRect = new Rect(
-                    col * (fullTexture.width / gridSize),
-                    (gridSize - 1 - row) * (fullTexture.height / gridSize),
-                    fullTexture.width / gridSize,
-                    fullTexture.height / gridSize
-                );
-
-                Sprite pieceSprite = Sprite.Create(
-                    fullTexture,
-                    spriteRect,
-                    new Vector2(0.5f, 0.5f),
-                    100
-                );
-
-                // Инстанцируем
-                GameObject pieceGO = Instantiate(puzzlePiecePrefab, puzzlePiecesParent);
-                Image image = pieceGO.GetComponent<Image>();
-                image.sprite = pieceSprite;
-                image.preserveAspect = false;
-
-                RectTransform rt = pieceGO.GetComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(displaySize, displaySize);
-
-                var dragHandler = pieceGO.GetComponent<PuzzlePieceDragHandler>();
-                if (dragHandler != null)
-                {
-                    dragHandler.targetSizeInDropZone = new Vector2(cellWidth, cellHeight);
-                    dragHandler.targetRow = row;
-                    dragHandler.targetCol = col; 
-                }
-                // Позиция внутри Viewport'а
-                rt.anchoredPosition = Vector2.zero;
-
-                // Для отладки
-                Debug.Log($"Пазл {row},{col} создан в позиции: {rt.anchoredPosition}");
+                cells.Add(new Vector2Int(col, row));
             }
         }
+
+        // Шаг 2: Перемешиваем ячейки
+        System.Random rng = new System.Random();
+        int n = cells.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            Vector2Int temp = cells[k];
+            cells[k] = cells[n];
+            cells[n] = temp;
+        }
+
+        // Шаг 3: Рассчитываем, сколько пазлов помещается в строку
+        int piecesPerRow = Mathf.Max(1, Mathf.FloorToInt(viewportWidth / (displaySize + spacing)));
+
+        // Шаг 4: Создаём пазлы в случайном порядке и размещаем их в сетке внутри ScrollRect
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Vector2Int cell = cells[i];
+            int col = cell.x;
+            int row = cell.y;
+
+            // Создаём спрайт фрагмента
+            Rect spriteRect = new Rect(
+                col * (fullTexture.width / gridSize),
+                (gridSize - 1 - row) * (fullTexture.height / gridSize),
+                fullTexture.width / gridSize,
+                fullTexture.height / gridSize
+            );
+
+            Sprite pieceSprite = Sprite.Create(
+                fullTexture,
+                spriteRect,
+                new Vector2(0.5f, 0.5f),
+                100
+            );
+
+            // Инстанцируем пазл
+            GameObject pieceGO = Instantiate(puzzlePiecePrefab, puzzlePiecesParent);
+            Image image = pieceGO.GetComponent<Image>();
+            image.sprite = pieceSprite;
+            image.preserveAspect = false;
+
+            RectTransform rt = pieceGO.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(displaySize, displaySize);
+
+            var dragHandler = pieceGO.GetComponent<PuzzlePieceDragHandler>();
+            if (dragHandler != null)
+            {
+                dragHandler.targetSizeInDropZone = new Vector2(cellWidth, cellHeight);
+                dragHandler.targetRow = row;
+                dragHandler.targetCol = col;
+            }
+
+            // Рассчитываем позицию в ScrollRect (сетка слева направо, сверху вниз)
+            int rowIndex = i / piecesPerRow;
+            int colIndex = i % piecesPerRow;
+
+            float xPos = colIndex * (displaySize + spacing) - viewportWidth / 2 + displaySize / 2;
+            float yPos = -rowIndex * (displaySize + spacing) + viewportHeight / 2 - displaySize / 2;
+
+            rt.anchoredPosition = new Vector2(xPos, yPos);
+
+            Debug.Log($"Пазл [{row},{col}] создан в позиции: {rt.anchoredPosition}");
+        }
+
+        totalPieces = gridSize * gridSize;
+        correctlyPlacedCount = 0;
+        elapsedTime = 0f;
+        isTimerRunning = true;
     }
 
     Texture2D LoadUserImageFromPlayerPrefs()

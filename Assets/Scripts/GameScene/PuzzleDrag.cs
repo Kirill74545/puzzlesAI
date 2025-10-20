@@ -24,7 +24,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
     public int targetCol;
     public bool isCorrectlyPlaced = false;
     private bool wasPlacedInDropZone = false;
-    private Vector2 dropZonePositionWhenPlaced;
+    private Vector2 dropZonePositionWhenPlaced;   
 
     void Start()
     {
@@ -61,6 +61,8 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
         rectTransform.SetParent(canvas.transform, true);
+
+        transform.SetAsLastSibling();
 
         // Сбрасываем Z-координату при начале перетаскивания
         ResetZPosition();
@@ -163,6 +165,41 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             else
             {
                 ReturnToOriginalPosition();
+            }
+        }
+
+        if (isCorrectPlacement)
+        {
+            // Приклеиваем точно по центру своей ячейки 
+            float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
+            float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
+
+            Vector2 perfectPosition = new Vector2(
+                dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
+                dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
+            );
+
+            rectTransform.anchoredPosition = perfectPosition;
+            isCorrectlyPlaced = true;
+            this.enabled = false; // больше нельзя тащить
+
+            // отключаем блокировку ввода
+            if (canvasGroup != null)
+            {
+                canvasGroup.blocksRaycasts = false;
+            }
+            else
+            {
+                // На всякий случай — если CanvasGroup не назначен
+                GetComponent<Graphic>().raycastTarget = false;
+            }
+
+            Debug.Log($"Пазл [{targetRow},{targetCol}] приклеен!");
+
+            PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
+            if (puzzleGen != null)
+            {
+                puzzleGen.RegisterCorrectPlacement();
             }
         }
 
