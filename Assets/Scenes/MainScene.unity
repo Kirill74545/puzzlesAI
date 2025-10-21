@@ -299,6 +299,7 @@ GameObject:
   m_Component:
   - component: {fileID: 211363430}
   - component: {fileID: 211363429}
+  - component: {fileID: 211363431}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -352,6 +353,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &211363431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 211363428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e792940b47d203468b1948423aca1fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SDClient
+  serverIP: 192.168.206.232
+  serverPort: 8000
+  promptInput: {fileID: 535692156}
+  generateButton: {fileID: 801327628}
+  outputImage: {fileID: 0}
 --- !u!1 &219140272
 GameObject:
   m_ObjectHideFlags: 0
@@ -3265,7 +3283,7 @@ GameObject:
   - component: {fileID: 1465736269}
   - component: {fileID: 1465736268}
   m_Layer: 5
-  m_Name: ButtonPlay (1)
+  m_Name: ButtonNext
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
