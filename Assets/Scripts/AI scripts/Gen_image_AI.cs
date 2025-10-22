@@ -1,57 +1,34 @@
-п»їusing UnityEngine;
-using UnityEngine.UI;
+// Gen_image_AI.cs
+using UnityEngine;
 using UnityEngine.Networking;
-using TMPro;
+using System;
 using System.Collections;
 using System.Text;
 using System.IO;
 
-public class SDClient : MonoBehaviour
+public class Gen_image_AI : MonoBehaviour
 {
-    [Header("РќР°СЃС‚СЂРѕР№РєРё СЃРµСЂРІРµСЂР°")]
-    public string serverIP = "192.168.206.232";
-    public int serverPort = 8000;
-
-    [Header("UI СЌР»РµРјРµРЅС‚С‹")]
-    public TMP_InputField promptInput;
-    public Button generateButton;
-    public RawImage outputImage;
-
-    void Start()
-    {
-        if (generateButton != null)
-            generateButton.onClick.AddListener(OnGenerateClicked);
-    }
-
-    void OnGenerateClicked()
-    {
-        string prompt = promptInput.text.Trim();
-        if (string.IsNullOrEmpty(prompt))
-        {
-            Debug.LogWarning("РџСЂРѕРјРїС‚ РїСѓСЃС‚РѕР№!");
-            return;
-        }
-
-        string url = $"http://{serverIP}:{serverPort}/generate";
-        StartCoroutine(SendPrompt(url, prompt));
-    }
-
-    [System.Serializable]
+    [Serializable]
     private class GenerateRequest
     {
         public string prompt;
-        public int num_inference_steps = 20;     
-        public float guidance_scale = 7.5f;       
+        public int num_inference_steps = 20;
+        public float guidance_scale = 7.5f;
     }
 
-    [System.Serializable]
+    [Serializable]
     private class GenerateResponse
     {
-        public string image;
+        public string image; // base64 строка
     }
 
-    IEnumerator SendPrompt(string url, string prompt)
+    public string serverIP = "192.168.206.232";
+    public int serverPort = 8000;
+
+    // Основной метод: генерация изображения по промпту
+    public IEnumerator GenerateImage(string prompt, Action<Texture2D> onCompleted)
     {
+        string url = $"http://{serverIP}:{serverPort}/generate";
         var req = new GenerateRequest { prompt = prompt };
         string json = JsonUtility.ToJson(req);
         byte[] body = Encoding.UTF8.GetBytes(json);
@@ -62,44 +39,51 @@ public class SDClient : MonoBehaviour
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
 
-            Debug.Log("РћС‚РїСЂР°РІРєР° Р·Р°РїСЂРѕСЃР°: " + url);
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("РћС€РёР±РєР°: " + www.error);
-                Debug.LogError("РћС‚РІРµС‚: " + www.downloadHandler.text);
+                Debug.LogError("Ошибка генерации: " + www.error);
+                Debug.LogError("Ответ сервера: " + www.downloadHandler.text);
+                onCompleted?.Invoke(null);
+                yield break;
             }
-            else
+
+            string responseJson = www.downloadHandler.text;
+            GenerateResponse response = JsonUtility.FromJson<GenerateResponse>(responseJson);
+
+            if (string.IsNullOrEmpty(response?.image))
             {
-                string responseJson = www.downloadHandler.text;
-                GenerateResponse response = JsonUtility.FromJson<GenerateResponse>(responseJson);
+                Debug.LogError("Сервер не вернул изображение.");
+                onCompleted?.Invoke(null);
+                yield break;
+            }
 
-                if (string.IsNullOrEmpty(response?.image))
+            try
+            {
+                string cleanBase64 = response.image
+                    .Replace(" ", "")
+                    .Replace("\n", "")
+                    .Replace("\r", "");
+
+                byte[] imageBytes = Convert.FromBase64String(cleanBase64);
+                Texture2D tex = new Texture2D(2, 2);
+                if (tex.LoadImage(imageBytes))
                 {
-                    Debug.LogError("РџРѕР»Рµ 'image' РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ РѕС‚РІРµС‚Рµ.");
-                    yield break;
-                }
-
-                string cleanBase64 = response.image.Replace(" ", "").Replace("\n", "").Replace("\r", "");
-
-                try
-                {
-                    byte[] imageBytes = System.Convert.FromBase64String(cleanBase64);
-                    Texture2D tex = new Texture2D(2, 2);
-                    tex.LoadImage(imageBytes);
-
-                    if (outputImage != null)
-                        outputImage.texture = tex;
-
+                    // Сохраняем на устройстве (опционально)
                     SaveImage(tex, prompt);
-
-                    Debug.Log("вњ… РР·РѕР±СЂР°Р¶РµРЅРёРµ СЃРѕС…СЂР°РЅРµРЅРѕ!");
+                    onCompleted?.Invoke(tex);
                 }
-                catch (System.Exception e)
+                else
                 {
-                    Debug.LogError("РћС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё: " + e.Message);
+                    Debug.LogError("Не удалось загрузить изображение из байтов.");
+                    onCompleted?.Invoke(null);
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Ошибка обработки изображения: " + e.Message);
+                onCompleted?.Invoke(null);
             }
         }
     }
@@ -108,24 +92,19 @@ public class SDClient : MonoBehaviour
     {
         byte[] pngData = texture.EncodeToPNG();
         string safePrompt = string.Join("_", prompt.Split(Path.GetInvalidFileNameChars()));
-        string fileName = $"sd_{safePrompt}_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+        string fileName = $"AI_{safePrompt}.png";
 
 #if UNITY_EDITOR
-        string folderPath = Path.Combine(Application.dataPath, "Resources");
-        Directory.CreateDirectory(folderPath);
-        string fullPath = Path.Combine(folderPath, fileName);
-        File.WriteAllBytes(fullPath, pngData);
-        Debug.Log("РЎРѕС…СЂР°РЅРµРЅРѕ РІ СЂРµРґР°РєС‚РѕСЂРµ: " + fullPath);
-
-       
+        string path = Path.Combine(Application.dataPath, "GeneratedImages", fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        File.WriteAllBytes(path, pngData);
+        Debug.Log("Сохранено в редакторе: " + path);
         UnityEditor.AssetDatabase.Refresh();
 #else
-        // РќР° РјРѕР±РёР»СЊРЅРѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ вЂ” РІ persistentDataPath
-        string folderPath = Path.Combine(Application.persistentDataPath, "Resources");
-        Directory.CreateDirectory(folderPath);
-        string fullPath = Path.Combine(folderPath, fileName);
-        File.WriteAllBytes(fullPath, pngData);
-        Debug.Log("РЎРѕС…СЂР°РЅРµРЅРѕ РЅР° СѓСЃС‚СЂРѕР№СЃС‚РІРµ: " + fullPath);
+        string path = Path.Combine(Application.persistentDataPath, "GeneratedImages", fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        File.WriteAllBytes(path, pngData);
+        Debug.Log("Сохранено на устройстве: " + path);
 #endif
     }
 }

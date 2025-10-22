@@ -1,47 +1,47 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
 public class InputPanelController : MonoBehaviour
 {
-    [Header("Основные UI элементы")]
-    public Button startButton;               // Стартовая кнопка
-    public GameObject inputPanel;            // Основная панель ввода
-    public TMP_InputField inputField;        // Поле ввода TextMeshPro
-    public Button confirmButton;             // Кнопка подтверждения
-    public Button randomButton;              // Кнопка случайной генерации
-    public Button userImageButton;           // Кнопка загрузки своего изображения
+    [Header("РћСЃРЅРѕРІРЅС‹Рµ UI СЌР»РµРјРµРЅС‚С‹")]
+    public Button startButton;               // РЎС‚Р°СЂС‚РѕРІР°СЏ РєРЅРѕРїРєР°
+    public GameObject inputPanel;            // РћСЃРЅРѕРІРЅР°СЏ РїР°РЅРµР»СЊ РІРІРѕРґР°
+    public TMP_InputField inputField;        // РџРѕР»Рµ РІРІРѕРґР° TextMeshPro
+    public Button confirmButton;             // РљРЅРѕРїРєР° РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ
+    public Button randomButton;              // РљРЅРѕРїРєР° СЃР»СѓС‡Р°Р№РЅРѕР№ РіРµРЅРµСЂР°С†РёРё
+    public Button userImageButton;           // РљРЅРѕРїРєР° Р·Р°РіСЂСѓР·РєРё СЃРІРѕРµРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 
-    [Header("Дополнительное изображение")]
+    [Header("Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ")]
     public GameObject additionalImage;
     public GameObject additionalImage_;
     public GameObject promptImage;
 
-    [Header("Загрузочный индикатор")]
+    [Header("Р—Р°РіСЂСѓР·РѕС‡РЅС‹Р№ РёРЅРґРёРєР°С‚РѕСЂ")]
     public GameObject loadingIndicator;
 
-    [Header("Кнопка после загрузки")]
-    public Button confirmButton2;           // Новая кнопка подтверждения после загрузки
+    [Header("РљРЅРѕРїРєР° РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё")]
+    public Button confirmButton2;           // РќРѕРІР°СЏ РєРЅРѕРїРєР° РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё
 
-    [Header("Кнопки выбора")]
+    [Header("РљРЅРѕРїРєРё РІС‹Р±РѕСЂР°")]
     public Button classikButton;
     public Button randomChoiceButton;
 
-    [Header("Кнопки уровней сложности")]
+    [Header("РљРЅРѕРїРєРё СѓСЂРѕРІРЅРµР№ СЃР»РѕР¶РЅРѕСЃС‚Рё")]
     public Button level1Button;
     public Button level2Button;
     public Button level3Button;
     public Button level4Button;
 
-    [Header("Параметры анимации")]
-    public float appearDuration = 0.5f;      // Длительность появления
-    public Vector2 targetScale = Vector2.one; // Конечный масштаб панели
+    [Header("РџР°СЂР°РјРµС‚СЂС‹ Р°РЅРёРјР°С†РёРё")]
+    public float appearDuration = 0.5f;      // Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРѕСЏРІР»РµРЅРёСЏ
+    public Vector2 targetScale = Vector2.one; // РљРѕРЅРµС‡РЅС‹Р№ РјР°СЃС€С‚Р°Р± РїР°РЅРµР»Рё
 
     private string savedInput;
     private string selectedChoice;
     private string selectedLevel;
-    private Texture2D userTexture;          // Текстура пользовательского изображения
+    private Texture2D userTexture;          // РўРµРєСЃС‚СѓСЂР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 
     private CanvasGroup panelCanvasGroup;
     private RectTransform panelRectTransform;
@@ -50,16 +50,18 @@ public class InputPanelController : MonoBehaviour
     private CanvasGroup imageCanvasGroup_;
     private RectTransform imageRectTransform_;
 
+    private Gen_image_AI aiGenerator;
+
     private bool isRotating = false;
 
     void Start()
     {
-        // Получаем компоненты панели
+        // РџРѕР»СѓС‡Р°РµРј РєРѕРјРїРѕРЅРµРЅС‚С‹ РїР°РЅРµР»Рё
         panelRectTransform = inputPanel.GetComponent<RectTransform>();
         panelCanvasGroup = inputPanel.GetComponent<CanvasGroup>()
             ?? inputPanel.AddComponent<CanvasGroup>();
 
-        // Получаем компоненты дополнительного изображения (если задано)
+        // РџРѕР»СѓС‡Р°РµРј РєРѕРјРїРѕРЅРµРЅС‚С‹ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ (РµСЃР»Рё Р·Р°РґР°РЅРѕ)
         if (additionalImage != null)
         {
             imageRectTransform = additionalImage.GetComponent<RectTransform>();
@@ -74,7 +76,13 @@ public class InputPanelController : MonoBehaviour
                 ?? additionalImage_.AddComponent<CanvasGroup>();
         }
 
-        // Убеждаемся, что всё скрыто изначально
+        aiGenerator = FindObjectOfType<Gen_image_AI>();
+        if (aiGenerator == null)
+        {
+            Debug.LogWarning("Gen_image_AI РЅРµ РЅР°Р№РґРµРЅ РЅР° СЃС†РµРЅРµ. Р“РµРЅРµСЂР°С†РёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РЅРµРґРѕСЃС‚СѓРїРЅР°.");
+        }
+
+        // РЈР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РІСЃС‘ СЃРєСЂС‹С‚Рѕ РёР·РЅР°С‡Р°Р»СЊРЅРѕ
         inputPanel.SetActive(false);
         if (additionalImage != null)
             additionalImage.SetActive(false);
@@ -112,7 +120,7 @@ public class InputPanelController : MonoBehaviour
         if (userImageButton != null)
             userImageButton.gameObject.SetActive(false);
 
-        // Подписка на события кнопок
+        // РџРѕРґРїРёСЃРєР° РЅР° СЃРѕР±С‹С‚РёСЏ РєРЅРѕРїРѕРє
         if (startButton != null)
             startButton.onClick.AddListener(OnStartButtonClicked);
 
@@ -148,34 +156,34 @@ public class InputPanelController : MonoBehaviour
     {
         bool isEmpty = string.IsNullOrWhiteSpace(newText);
 
-        // Показываем кнопку подтверждения, если текст НЕ пустой
+        // РџРѕРєР°Р·С‹РІР°РµРј РєРЅРѕРїРєСѓ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ, РµСЃР»Рё С‚РµРєСЃС‚ РќР• РїСѓСЃС‚РѕР№
         if (confirmButton != null)
         {
             confirmButton.gameObject.SetActive(!string.IsNullOrWhiteSpace(newText));
         }
 
-        // Кнопка случайной генерации видна, если текст ПУСТОЙ
+        // РљРЅРѕРїРєР° СЃР»СѓС‡Р°Р№РЅРѕР№ РіРµРЅРµСЂР°С†РёРё РІРёРґРЅР°, РµСЃР»Рё С‚РµРєСЃС‚ РџРЈРЎРўРћР™
         if (randomButton != null)
             randomButton.gameObject.SetActive(isEmpty);
 
-        // Кнопка загрузки изображения видна, если текст ПУСТОЙ
+        // РљРЅРѕРїРєР° Р·Р°РіСЂСѓР·РєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІРёРґРЅР°, РµСЃР»Рё С‚РµРєСЃС‚ РџРЈРЎРўРћР™
         if (userImageButton != null)
             userImageButton.gameObject.SetActive(isEmpty);
     }
 
     void OnStartButtonClicked()
     {
-        // Скрываем стартовую кнопку
+        // РЎРєСЂС‹РІР°РµРј СЃС‚Р°СЂС‚РѕРІСѓСЋ РєРЅРѕРїРєСѓ
         startButton.gameObject.SetActive(false);
 
-        // Активируем панель и изображение
+        // РђРєС‚РёРІРёСЂСѓРµРј РїР°РЅРµР»СЊ Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ
         inputPanel.SetActive(true);
         if (additionalImage != null)
             additionalImage.SetActive(true);
         if (additionalImage_ != null)
             additionalImage_.SetActive(true);
 
-        // Сбрасываем начальные состояния
+        // РЎР±СЂР°СЃС‹РІР°РµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
         panelRectTransform.localScale = Vector3.zero;
         panelCanvasGroup.alpha = 0f;
 
@@ -194,7 +202,7 @@ public class InputPanelController : MonoBehaviour
         if (inputField != null)
             OnInputFieldValueChanged(inputField.text);
 
-        // Запускаем анимацию появления
+        // Р—Р°РїСѓСЃРєР°РµРј Р°РЅРёРјР°С†РёСЋ РїРѕСЏРІР»РµРЅРёСЏ
         StartCoroutine(AppearUI());
     }
 
@@ -203,7 +211,7 @@ public class InputPanelController : MonoBehaviour
         TextAsset jsonFile = Resources.Load<TextAsset>("RandomValues");
         if (jsonFile == null)
         {
-            Debug.LogError("Файл RandomValues.json не найден в папке Resources!");
+            Debug.LogError("Р¤Р°Р№Р» RandomValues.json РЅРµ РЅР°Р№РґРµРЅ РІ РїР°РїРєРµ Resources!");
             return;
         }
 
@@ -214,13 +222,13 @@ public class InputPanelController : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Ошибка при парсинге JSON: " + e.Message);
+            Debug.LogError("РћС€РёР±РєР° РїСЂРё РїР°СЂСЃРёРЅРіРµ JSON: " + e.Message);
             return;
         }
 
         if (values == null || values.Length == 0)
         {
-            Debug.LogWarning("JSON не содержит значений.");
+            Debug.LogWarning("JSON РЅРµ СЃРѕРґРµСЂР¶РёС‚ Р·РЅР°С‡РµРЅРёР№.");
             return;
         }
 
@@ -236,11 +244,11 @@ public class InputPanelController : MonoBehaviour
         {
             float t = elapsedTime / appearDuration;
 
-            // Анимация панели
+            // РђРЅРёРјР°С†РёСЏ РїР°РЅРµР»Рё
             panelRectTransform.localScale = Vector3.Lerp(Vector3.zero, targetScale, t);
             panelCanvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
 
-            // Анимация дополнительного изображения
+            // РђРЅРёРјР°С†РёСЏ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
             if (additionalImage != null)
             {
                 imageRectTransform.localScale = Vector3.Lerp(Vector3.zero, targetScale, t);
@@ -257,7 +265,7 @@ public class InputPanelController : MonoBehaviour
             yield return null;
         }
 
-        // Финальное состояние
+        // Р¤РёРЅР°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
         panelRectTransform.localScale = targetScale;
         panelCanvasGroup.alpha = 1f;
 
@@ -277,7 +285,7 @@ public class InputPanelController : MonoBehaviour
     void OnConfirmButtonClicked()
     {
         savedInput = inputField.text.Trim();
-        Debug.Log("Сохранено: " + savedInput);
+        Debug.Log("РЎРѕС…СЂР°РЅРµРЅРѕ: " + savedInput);
 
         HideInputElements();
 
@@ -292,11 +300,11 @@ public class InputPanelController : MonoBehaviour
 
     void OnUserImageButtonClicked()
     {
-        // Скрываем стандартные элементы ввода
+        // РЎРєСЂС‹РІР°РµРј СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ РІРІРѕРґР°
         HideInputElements();
 
-        // Запрашиваем изображение из галереи
-        #if UNITY_ANDROID && !UNITY_EDITOR
+        // Р—Р°РїСЂР°С€РёРІР°РµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· РіР°Р»РµСЂРµРё
+#if UNITY_ANDROID && !UNITY_EDITOR
         NativeGallery.GetImageFromGallery((path) =>
     {
         if (path != null)
@@ -306,7 +314,7 @@ public class InputPanelController : MonoBehaviour
             {
                 userTexture = texture;
                 savedInput = "user image";
-                Debug.Log("Выбрано пользовательское изображение");
+                Debug.Log("Р’С‹Р±СЂР°РЅРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ");
 
                 if (loadingIndicator != null)
                 {
@@ -318,19 +326,19 @@ public class InputPanelController : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Не удалось загрузить изображение из галереи");
+                Debug.LogError("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· РіР°Р»РµСЂРµРё");
                 ShowInputElements();
             }
         }
         else
         {
-            Debug.Log("Пользователь отменил выбор изображения");
+            Debug.Log("РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‚РјРµРЅРёР» РІС‹Р±РѕСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ");
             ShowInputElements();
         }
-    }, "Выберите изображение", "image/*");
-    #else
-        // Эмуляция в редакторе Unity
-        Debug.Log("В редакторе Unity функционал галереи недоступен");
+    }, "Р’С‹Р±РµСЂРёС‚Рµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ", "image/*");
+#else
+        // Р­РјСѓР»СЏС†РёСЏ РІ СЂРµРґР°РєС‚РѕСЂРµ Unity
+        Debug.Log("Р’ СЂРµРґР°РєС‚РѕСЂРµ Unity С„СѓРЅРєС†РёРѕРЅР°Р» РіР°Р»РµСЂРµРё РЅРµРґРѕСЃС‚СѓРїРµРЅ");
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
 
@@ -341,7 +349,7 @@ public class InputPanelController : MonoBehaviour
         }
 
         StartCoroutine(ProcessUserImageSubmission());
-    #endif
+#endif
     }
 
     void HideInputElements()
@@ -358,18 +366,80 @@ public class InputPanelController : MonoBehaviour
         if (inputField != null) inputField.gameObject.SetActive(true);
         if (additionalImage_ != null) additionalImage_.SetActive(true);
 
-        // Обновляем видимость кнопок в зависимости от содержимого поля
+        // РћР±РЅРѕРІР»СЏРµРј РІРёРґРёРјРѕСЃС‚СЊ РєРЅРѕРїРѕРє РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РїРѕР»СЏ
         OnInputFieldValueChanged(inputField.text);
     }
 
     IEnumerator ProcessSubmission()
     {
-        yield return new WaitForSeconds(2f);
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(true);
+            StartCoroutine(RotateLoadingIndicator());
+        }
+
+        Texture2D loadedTexture = null;
+        bool fromResources = false;
+
+        // рџ”Ќ РЁРђР“ 1: РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ Resources
+        Sprite spriteFromResources = Resources.Load<Sprite>(savedInput);
+        if (spriteFromResources != null && spriteFromResources.texture != null)
+        {
+            loadedTexture = spriteFromResources.texture;
+            fromResources = true;
+            Debug.Log($"вњ… РР·РѕР±СЂР°Р¶РµРЅРёРµ '{savedInput}' РЅР°Р№РґРµРЅРѕ РІ Resources. РџСЂРѕРїСѓСЃРєР°РµРј РіРµРЅРµСЂР°С†РёСЋ РР.");
+        }
+        else
+        {
+            // рџ”Ѓ РЁРђР“ 2: Р•СЃР»Рё РЅРµС‚ вЂ” Р·Р°РїСѓСЃРєР°РµРј РіРµРЅРµСЂР°С†РёСЋ С‡РµСЂРµР· РР
+            if (aiGenerator != null)
+            {
+                Debug.Log($"рџ”„ РР·РѕР±СЂР°Р¶РµРЅРёРµ '{savedInput}' РЅРµ РЅР°Р№РґРµРЅРѕ РІ Resources. Р—Р°РїСѓСЃРєР°РµРј РіРµРЅРµСЂР°С†РёСЋ С‡РµСЂРµР· РР...");
+                yield return StartCoroutine(aiGenerator.GenerateImage(savedInput, (tex) => loadedTexture = tex));
+            }
+            else
+            {
+                // Fallback: Р¶РґС‘Рј 2 СЃРµРє Рё РёСЃРїРѕР»СЊР·СѓРµРј "banana"
+                yield return new WaitForSeconds(2f);
+                Debug.LogWarning("Gen_image_AI РЅРµ РЅР°Р№РґРµРЅ. РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ fallback 'banana'.");
+                spriteFromResources = Resources.Load<Sprite>("banana");
+                if (spriteFromResources != null)
+                    loadedTexture = spriteFromResources.texture;
+            }
+        }
 
         if (loadingIndicator != null)
+        {
             loadingIndicator.SetActive(false);
+            isRotating = false;
+        }
 
-        SetPromptImage(savedInput);
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+        if (loadedTexture != null)
+        {
+            if (fromResources)
+            {
+                // РР· Resources в†’ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєР°Рє РѕР±С‹С‡РЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+                SetPromptImage(savedInput); // Р­С‚Рѕ СѓР¶Рµ Р·Р°РіСЂСѓР¶Р°РµС‚ СЃРїСЂР°Р№С‚ РёР· Resources
+                GameData.InputMode = savedInput; // РћСЃС‚Р°РІР»СЏРµРј РєР°Рє С‚РµРєСЃС‚
+                GameData.UserImage = null;      // РќРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ
+            }
+            else
+            {
+                // РћС‚ РР в†’ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєР°Рє "РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ"
+                GameData.InputMode = "user image";
+                GameData.UserImage = loadedTexture;
+                SetAIPromptImage(loadedTexture);
+            }
+        }
+        else
+        {
+            // Fallback: РµСЃР»Рё РЅРёС‡РµРіРѕ РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ вЂ” РёСЃРїРѕР»СЊР·СѓРµРј banana
+            Debug.LogError("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРё РёР· Resources, РЅРё С‡РµСЂРµР· РР.");
+            SetPromptImage("banana");
+            GameData.InputMode = "banana";
+            GameData.UserImage = null;
+        }
 
         if (promptImage != null)
             promptImage.SetActive(true);
@@ -431,7 +501,7 @@ public class InputPanelController : MonoBehaviour
     void OnChoiceSelected(string choice)
     {
         selectedChoice = choice;
-        Debug.Log("Выбрано: " + selectedChoice);
+        Debug.Log("Р’С‹Р±СЂР°РЅРѕ: " + selectedChoice);
 
         if (classikButton != null)
             classikButton.gameObject.SetActive(false);
@@ -451,7 +521,7 @@ public class InputPanelController : MonoBehaviour
     void OnLevelSelected(string level)
     {
         selectedLevel = level;
-        Debug.Log("Выбран уровень: " + selectedLevel);
+        Debug.Log("Р’С‹Р±СЂР°РЅ СѓСЂРѕРІРµРЅСЊ: " + selectedLevel);
 
         if (loadingIndicator != null)
         {
@@ -475,7 +545,7 @@ public class InputPanelController : MonoBehaviour
     {
         if (promptImage == null)
         {
-            Debug.LogWarning("promptImage не назначен в инспекторе!");
+            Debug.LogWarning("promptImage РЅРµ РЅР°Р·РЅР°С‡РµРЅ РІ РёРЅСЃРїРµРєС‚РѕСЂРµ!");
             return;
         }
 
@@ -483,7 +553,7 @@ public class InputPanelController : MonoBehaviour
 
         if (loadedSprite == null)
         {
-            Debug.Log($"Изображение '{imageName}' не найдено. Используется 'banana'.");
+            Debug.Log($"РР·РѕР±СЂР°Р¶РµРЅРёРµ '{imageName}' РЅРµ РЅР°Р№РґРµРЅРѕ. РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ 'banana'.");
             loadedSprite = Resources.Load<Sprite>("banana");
         }
 
@@ -494,7 +564,7 @@ public class InputPanelController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("promptImage не содержит компонент Image!");
+            Debug.LogError("promptImage РЅРµ СЃРѕРґРµСЂР¶РёС‚ РєРѕРјРїРѕРЅРµРЅС‚ Image!");
         }
     }
 
@@ -502,24 +572,24 @@ public class InputPanelController : MonoBehaviour
     {
         if (promptImage == null || userTexture == null)
         {
-            Debug.LogWarning("promptImage или userTexture не назначены!");
+            Debug.LogWarning("promptImage РёР»Рё userTexture РЅРµ РЅР°Р·РЅР°С‡РµРЅС‹!");
             return;
         }
 
         Image imageComponent = promptImage.GetComponent<Image>();
         if (imageComponent != null)
         {
-            // Создаем спрайт из пользовательской текстуры
+            // РЎРѕР·РґР°РµРј СЃРїСЂР°Р№С‚ РёР· РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ С‚РµРєСЃС‚СѓСЂС‹
             Sprite userSprite = Sprite.Create(userTexture,
                 new Rect(0, 0, userTexture.width, userTexture.height),
                 Vector2.one * 0.5f);
 
             imageComponent.sprite = userSprite;
-            Debug.Log("Установлено пользовательское изображение");
+            Debug.Log("РЈСЃС‚Р°РЅРѕРІР»РµРЅРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ");
         }
         else
         {
-            Debug.LogError("promptImage не содержит компонент Image!");
+            Debug.LogError("promptImage РЅРµ СЃРѕРґРµСЂР¶РёС‚ РєРѕРјРїРѕРЅРµРЅС‚ Image!");
         }
     }
 
@@ -533,20 +603,34 @@ public class InputPanelController : MonoBehaviour
             isRotating = false;
         }
 
-        GameData.InputMode = savedInput; 
         GameData.SelectedLevel = selectedLevel;
 
-        if (savedInput == "user image" && userTexture != null)
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+    }
+    void SetAIPromptImage(Texture2D aiTexture)
+    {
+        if (promptImage == null || aiTexture == null)
         {
-            GameData.UserImage = userTexture;
-            Debug.Log("Пользовательское изображение передано в GameData");
+            Debug.LogWarning("promptImage РёР»Рё aiTexture РЅРµ РЅР°Р·РЅР°С‡РµРЅС‹!");
+            return;
+        }
+
+        Image imageComponent = promptImage.GetComponent<Image>();
+        if (imageComponent != null)
+        {
+            Sprite aiSprite = Sprite.Create(aiTexture,
+                new Rect(0, 0, aiTexture.width, aiTexture.height),
+                new Vector2(0.5f, 0.5f),
+                100); // pixels per unit
+
+            imageComponent.sprite = aiSprite;
+            Debug.Log("РЈСЃС‚Р°РЅРѕРІР»РµРЅРѕ СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅРѕРµ AI РёР·РѕР±СЂР°Р¶РµРЅРёРµ");
         }
         else
         {
-            GameData.UserImage = null;
+            Debug.LogError("promptImage РЅРµ СЃРѕРґРµСЂР¶РёС‚ РєРѕРјРїРѕРЅРµРЅС‚ Image!");
         }
-
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
     }
 }
 
