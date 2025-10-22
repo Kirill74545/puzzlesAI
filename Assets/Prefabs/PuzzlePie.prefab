@@ -91,6 +91,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzlePieceDragHandler
   targetSizeInDropZone: {x: 0, y: 0}
+  shineColor: {r: 1, g: 1, b: 0.8, a: 1}
+  bounceIntensity: 1.2
+  effectDuration: 0.4
+  targetRow: 0
+  targetCol: 0
+  isCorrectlyPlaced: 0
 --- !u!225 &7390734021444998402
 CanvasGroup:
   m_ObjectHideFlags: 0

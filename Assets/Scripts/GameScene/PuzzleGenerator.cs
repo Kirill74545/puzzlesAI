@@ -26,6 +26,8 @@ public class PuzzleGenerator : MonoBehaviour
     private int totalPieces = 0;
     private int correctlyPlacedCount = 0;
 
+    public LevelCompleteUI levelCompleteUI;
+
 
     void Start()
     {
@@ -98,10 +100,22 @@ public class PuzzleGenerator : MonoBehaviour
 
     void OnPuzzleCompleted()
     {
+        isTimerRunning = false;
+
         PlayerPrefs.SetFloat("LastPuzzleTime", elapsedTime);
         PlayerPrefs.SetString("LastCompletedLevel", GameData.SelectedLevel);
         PlayerPrefs.Save();
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
+
+        if (levelCompleteUI != null)
+        {
+            levelCompleteUI.Show(elapsedTime);
+        }
+        else
+        {
+            Debug.LogWarning("LevelCompleteUI не назначен! Назначьте его в инспекторе.");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainScene");
+        }
     }
 
     void LoadTextureFromResources(string imageName)

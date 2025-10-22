@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
@@ -20,6 +21,11 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public Vector2 targetSizeInDropZone;
 
+    private Image pieceImage; // ссылка на изображение пазла
+    public Color shineColor = new Color(1f, 1f, 0.8f, 1f); // тёплый "сияющий" цвет (почти белый с жёлтым оттенком)
+    public float bounceIntensity = 1.2f; // на сколько увеличивать при прыжке
+    public float effectDuration = 0.4f; // общая длительность эффекта 
+
     public int targetRow;
     public int targetCol;
     public bool isCorrectlyPlaced = false;
@@ -33,6 +39,8 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         canvas = GetComponentInParent<Canvas>();
         if (canvas != null)
             uiCamera = canvas.worldCamera;
+
+        pieceImage = GetComponent<Image>();
 
         // Гарантируем, что начальная Z-координата равна 0
         ResetZPosition();
@@ -183,6 +191,8 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             isCorrectlyPlaced = true;
             this.enabled = false; // больше нельзя тащить
 
+            PlayBounceAndShineEffect();
+
             // отключаем блокировку ввода
             if (canvasGroup != null)
             {
@@ -232,6 +242,46 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize.x);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, originalSize.y);
         rectTransform.localScale = originalLocalScale;
+    }
+
+    private void PlayBounceAndShineEffect()
+    {
+        if (pieceImage == null) return;
+        StartCoroutine(BounceAndShine());
+    }
+
+    private IEnumerator BounceAndShine()
+    {
+        Vector3 originalScale = rectTransform.localScale;
+        Color originalColor = pieceImage.color;
+
+        float halfDuration = effectDuration / 2f;
+        float elapsed = 0f;
+
+        // Фаза 1: Подпрыгивание + сияние (увеличение и осветление)
+        while (elapsed < halfDuration)
+        {
+            float t = elapsed / halfDuration;
+            rectTransform.localScale = Vector3.Lerp(originalScale, originalScale * bounceIntensity, t);
+            pieceImage.color = Color.Lerp(originalColor, shineColor, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Фаза 2: Возврат к исходному состоянию
+        elapsed = 0f;
+        while (elapsed < halfDuration)
+        {
+            float t = elapsed / halfDuration;
+            rectTransform.localScale = Vector3.Lerp(originalScale * bounceIntensity, originalScale, t);
+            pieceImage.color = Color.Lerp(shineColor, originalColor, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Гарантируем точное восстановление
+        rectTransform.localScale = originalScale;
+        pieceImage.color = originalColor;
     }
 
     // Новый метод для сброса Z-координаты
