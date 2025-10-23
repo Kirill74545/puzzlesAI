@@ -2,27 +2,24 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class LevelCompleteUI : MonoBehaviour
 {
-    [Header("Ссылки")]
     public TextMeshProUGUI completionTimeText;
     public Button returnToMenuButton;
-
-    [Header("Эффекты")]
-    public ParticleSystem fireworksEffect; // можно оставить null — тогда не будет фейерверка
-    public float fadeInDuration = 0.6f;
+    public ParticleSystem fireworksEffect;
 
     private CanvasGroup canvasGroup;
 
     void Awake()
     {
-        canvasGroup = GetComponent<CanvasGroup>();
+        canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
         if (returnToMenuButton != null)
-        {
             returnToMenuButton.onClick.AddListener(ReturnToMainMenu);
-        }
-        HideImmediately();
+
+        // Скрываем при старте
+        gameObject.SetActive(false);
     }
 
     public void Show(float completionTime)
@@ -32,28 +29,29 @@ public class LevelCompleteUI : MonoBehaviour
         int seconds = Mathf.FloorToInt(completionTime % 60);
         completionTimeText.text = $"Пазл собран за\n{minutes:00}:{seconds:00}!";
 
-        // Показываем панель с анимацией
+        // Включаем панель
         gameObject.SetActive(true);
-        StartCoroutine(FadeIn());
-
-        // Запускаем фейерверк
-        if (fireworksEffect != null)
-        {
-            fireworksEffect.Play();
-        }
-    }
-
-    private System.Collections.IEnumerator FadeIn()
-    {
-        float elapsed = 0f;
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        while (elapsed < fadeInDuration)
+        // Запускаем плавное появление
+        StartCoroutine(FadeIn());
+
+        // Фейерверк
+        if (fireworksEffect != null)
+            fireworksEffect.Play();
+    }
+
+    private IEnumerator FadeIn()
+    {
+        float duration = 0.6f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
-            canvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeInDuration);
-            elapsed += Time.unscaledDeltaTime; // игнорируем Time.timeScale
+            canvasGroup.alpha = elapsed / duration;
+            elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
@@ -62,23 +60,16 @@ public class LevelCompleteUI : MonoBehaviour
         canvasGroup.blocksRaycasts = true;
     }
 
-    public void HideImmediately()
+    public void Hide()
     {
-        canvasGroup.alpha = 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+        if (fireworksEffect != null && fireworksEffect.isPlaying)
+            fireworksEffect.Stop();
         gameObject.SetActive(false);
     }
 
     private void ReturnToMainMenu()
     {
-        // Останавливаем эффекты (если нужно)
-        if (fireworksEffect != null && fireworksEffect.isPlaying)
-        {
-            fireworksEffect.Stop();
-        }
-
-        // Переход на MainScene
+        Hide();
         SceneManager.LoadScene("MainScene");
     }
 }

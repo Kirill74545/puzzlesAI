@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using DG.Tweening;
 
 public class PuzzleGenerator : MonoBehaviour
 {
@@ -77,6 +78,18 @@ public class PuzzleGenerator : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             UpdateTimerDisplay();
+        }
+    }
+
+    void StartTimerWithAnimation()
+    {
+        isTimerRunning = true;
+        if (timerText != null)
+        {
+            timerText.color = Color.black;
+            timerText.transform.DOScale(1.2f, 0.2f)
+                .OnComplete(() => timerText.transform.DOScale(1f, 0.2f))
+                .SetEase(Ease.OutQuad);
         }
     }
 
@@ -239,6 +252,7 @@ public class PuzzleGenerator : MonoBehaviour
                 dragHandler.targetSizeInDropZone = new Vector2(cellWidth, cellHeight);
                 dragHandler.targetRow = row;
                 dragHandler.targetCol = col;
+                dragHandler.scrollRectContent = puzzlePiecesParent;
             }
 
             // Рассчитываем позицию в ScrollRect (сетка слева направо, сверху вниз)
@@ -250,13 +264,19 @@ public class PuzzleGenerator : MonoBehaviour
 
             rt.anchoredPosition = new Vector2(xPos, yPos);
 
+            // Анимация появления
+            rt.localScale = Vector3.zero; // начинаем с 0
+            rt.DOScale(Vector3.one, 0.3f)
+                .SetEase(Ease.OutBack)
+                .SetDelay(i * 0.03f); // небольшая задержка для "волны"
+
             Debug.Log($"Пазл [{row},{col}] создан в позиции: {rt.anchoredPosition}");
         }
 
         totalPieces = gridSize * gridSize;
         correctlyPlacedCount = 0;
         elapsedTime = 0f;
-        isTimerRunning = true;
+        StartTimerWithAnimation();
     }
 
     Texture2D LoadUserImageFromPlayerPrefs()

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Collections;
+using DG.Tweening;
 
 public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
@@ -30,7 +31,9 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
     public int targetCol;
     public bool isCorrectlyPlaced = false;
     private bool wasPlacedInDropZone = false;
-    private Vector2 dropZonePositionWhenPlaced;   
+    private Vector2 dropZonePositionWhenPlaced;
+
+    public Transform scrollRectContent;
 
     void Start()
     {
@@ -42,8 +45,66 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
         pieceImage = GetComponent<Image>();
 
+        scrollRectContent = transform.parent;
+
         // Гарантируем, что начальная Z-координата равна 0
         ResetZPosition();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.clickCount == 2 && wasPlacedInDropZone && !isCorrectlyPlaced)
+        {
+            ReturnToScrollRectIfIncorrect();
+        }
+    }
+
+    public void ReturnToScrollRectIfIncorrect()
+    {
+        if (!wasPlacedInDropZone || isCorrectlyPlaced)
+        {
+            return;
+        }
+
+        if (scrollRectContent == null)
+        {
+            Debug.LogWarning("ScrollRect content не найден! Невозможно вернуть пазл.");
+            return;
+        }
+
+        // Включаем возможность перетаскивания
+        this.enabled = true;
+
+        // Восстанавливаем исходный размер (например, 20x20)
+        float displaySize = 20f;
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, displaySize);
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, displaySize);
+
+        // Анимация возврата
+        rectTransform.DOScale(0f, 0.2f).SetEase(Ease.InBack).OnComplete(() =>
+        {
+            // Перемещаем в ScrollRect
+            rectTransform.SetParent(scrollRectContent, false);
+            rectTransform.localScale = Vector3.one;
+            rectTransform.SetAsLastSibling();
+
+            // Позиция — временно (0,0), но ScrollRect сам прокрутит
+            rectTransform.anchoredPosition = Vector2.zero;
+
+            // Появление
+            rectTransform.localScale = Vector3.zero;
+            rectTransform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
+
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+                canvasGroup.blocksRaycasts = true;
+            }
+
+            ResetZPosition();
+
+            Debug.Log($"Неправильный пазл [{targetRow},{targetCol}] возвращён в ScrollRect.");
+        });
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -99,7 +160,10 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         canvasGroup.alpha = 1f;
 
         DropZone dropZone = Object.FindFirstObjectByType<DropZone>();
+        ScrollRect scrollRect = scrollRectContent?.GetComponentInParent<ScrollRect>();
+
         bool isInsideDropZone = false;
+        bool isInsideScrollRect = false;
         bool isCorrectPlacement = false;
         Vector2 dropPosition = Vector2.zero;
 
@@ -107,62 +171,95 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         {
             // Получаем позицию отпускания в локальных координатах DropZone
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    dropZone.rectTransform,
-                    eventData.position,
-                    uiCamera,
-                    out dropPosition))
+                dropZone.rectTransform,
+                eventData.position,
+                uiCamera,
+                out Vector2 dropPosInDropZone))
             {
-                if (dropZone.rectTransform.rect.Contains(dropPosition))
+                if (dropZone.rectTransform.rect.Contains(dropPosInDropZone))
                 {
                     isInsideDropZone = true;
+                    dropPosition = dropPosInDropZone;
 
-                    // Определяем, какая ячейка под этой позицией
+                    // Проверяем, правильная ли ячейка
                     Vector3 worldPoint = uiCamera.ScreenToWorldPoint(eventData.position);
                     Vector2Int currentCell = dropZone.GetCellAtWorldPosition(worldPoint, dropZone.gridSize);
-
-                    if (currentCell.x == targetCol && currentCell.y == targetRow)
-                    {
-                        isCorrectPlacement = true;
-                    }
+                    isCorrectPlacement = (currentCell.x == targetCol && currentCell.y == targetRow);
                 }
             }
         }
 
+        if (!isInsideDropZone && scrollRect != null && scrollRect.viewport != null)
+        {
+            // Проверяем попадание в Viewport (видимую область ScrollRect)
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    scrollRect.viewport,
+                    eventData.position,
+                    uiCamera,
+                    out Vector2 localPos))
+            {
+                if (scrollRect.viewport.rect.Contains(localPos))
+                {
+                    isInsideScrollRect = true;
+                }
+            }
+        }
+
+        if (isCorrectlyPlaced)
+        {
+            // Уже правильно размещен — ничего не делаем (на всякий случай)
+            ResetZPosition();
+            return;
+        }
+
         if (isInsideDropZone && dropZone != null)
         {
-            // Всегда остаёмся в DropZone
+            // Остаёмся в DropZone
             rectTransform.SetParent(dropZone.transform, false);
             rectTransform.localScale = Vector3.one;
-
-            // Устанавливаем размер
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
 
             if (isCorrectPlacement)
             {
-                // Приклеиваем точно по центру своей ячейки 
+                // Приклеиваем точно
                 float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
                 float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
-
                 Vector2 perfectPosition = new Vector2(
                     dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
                     dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
                 );
-
                 rectTransform.anchoredPosition = perfectPosition;
+
                 isCorrectlyPlaced = true;
                 this.enabled = false; // больше нельзя тащить
+
+                PlayBounceAndShineEffect();
+
+                // Отключаем raycast
+                if (canvasGroup != null)
+                    canvasGroup.blocksRaycasts = false;
+                else
+                    GetComponent<Graphic>().raycastTarget = false;
+
                 Debug.Log($"Пазл [{targetRow},{targetCol}] приклеен!");
+
+                PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
+                puzzleGen?.RegisterCorrectPlacement();
             }
             else
             {
+
                 rectTransform.anchoredPosition = dropPosition;
                 isCorrectlyPlaced = false;
-                // Можно снова тащить
             }
 
             wasPlacedInDropZone = true;
             dropZonePositionWhenPlaced = rectTransform.anchoredPosition;
+        }
+        else if (isInsideScrollRect && scrollRectContent != null)
+        {
+            ReturnToScrollRect();
         }
         else
         {
@@ -176,45 +273,38 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
             }
         }
 
-        if (isCorrectPlacement)
+        ResetZPosition();
+    }
+
+    private void ReturnToScrollRect()
+    {
+        if (scrollRectContent == null) return;
+
+        // Восстанавливаем исходный размер (20x20)
+        float displaySize = 20f; 
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, displaySize);
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, displaySize);
+
+        // Возвращаем в ScrollRect
+        rectTransform.SetParent(scrollRectContent, false);
+        rectTransform.localScale = Vector3.one;
+        rectTransform.SetAsLastSibling();
+        rectTransform.anchoredPosition = Vector2.zero; // ScrollRect сам разместит
+
+        // Сбрасываем флаги
+        wasPlacedInDropZone = false;
+        isCorrectlyPlaced = false;
+        this.enabled = true; // можно снова тащить
+
+        if (canvasGroup != null)
         {
-            // Приклеиваем точно по центру своей ячейки 
-            float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
-            float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
-
-            Vector2 perfectPosition = new Vector2(
-                dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
-                dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
-            );
-
-            rectTransform.anchoredPosition = perfectPosition;
-            isCorrectlyPlaced = true;
-            this.enabled = false; // больше нельзя тащить
-
-            PlayBounceAndShineEffect();
-
-            // отключаем блокировку ввода
-            if (canvasGroup != null)
-            {
-                canvasGroup.blocksRaycasts = false;
-            }
-            else
-            {
-                // На всякий случай — если CanvasGroup не назначен
-                GetComponent<Graphic>().raycastTarget = false;
-            }
-
-            Debug.Log($"Пазл [{targetRow},{targetCol}] приклеен!");
-
-            PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
-            if (puzzleGen != null)
-            {
-                puzzleGen.RegisterCorrectPlacement();
-            }
+            canvasGroup.alpha = 1f;
+            canvasGroup.blocksRaycasts = true;
         }
 
-
         ResetZPosition();
+
+        Debug.Log($"Пазл [{targetRow},{targetCol}] возвращён в ScrollRect через перетаскивание.");
     }
 
     private void ReturnToDropZonePosition()
@@ -246,42 +336,47 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     private void PlayBounceAndShineEffect()
     {
-        if (pieceImage == null) return;
-        StartCoroutine(BounceAndShine());
-    }
+        if (pieceImage == null || rectTransform == null) return;
 
-    private IEnumerator BounceAndShine()
-    {
         Vector3 originalScale = rectTransform.localScale;
         Color originalColor = pieceImage.color;
 
-        float halfDuration = effectDuration / 2f;
-        float elapsed = 0f;
+        // 1. Плавное "приземление" на место (если нужно — можно пропустить, если уже на месте)
+        // В вашем случае пазл уже на месте, поэтому начнём с паузы
 
-        // Фаза 1: Подпрыгивание + сияние (увеличение и осветление)
-        while (elapsed < halfDuration)
+        // 2. Короткая задержка — создаёт ощущение "ожидания"
+        float delay = 0.15f;
+
+        // 3. Импульс: лёгкое увеличение → возврат с отскоком
+        rectTransform.DOScale(originalScale * 1.08f, 0.25f)
+            .SetDelay(delay)
+            .SetEase(Ease.OutSine)
+            .OnComplete(() =>
+            {
+                rectTransform.DOScale(originalScale, 0.3f).SetEase(Ease.OutBack);
+            });
+
+        // 4. Сияние: не просто цвет, а кратковременное осветление + лёгкое мерцание
+        Color highlightColor = new Color(
+            Mathf.Min(originalColor.r * 1.4f, 1f),
+            Mathf.Min(originalColor.g * 1.4f, 1f),
+            Mathf.Min(originalColor.b * 1.4f, 1f),
+            originalColor.a
+        );
+
+        pieceImage.DOColor(highlightColor, 0.2f)
+            .SetDelay(delay)
+            .OnComplete(() =>
+            {
+                pieceImage.DOColor(originalColor, 0.4f).SetEase(Ease.OutSine);
+            });
+
+        // 5. Очень лёгкая пульсация (1 цикл) — как "эхо" успеха
+        DOVirtual.DelayedCall(delay + 0.6f, () =>
         {
-            float t = elapsed / halfDuration;
-            rectTransform.localScale = Vector3.Lerp(originalScale, originalScale * bounceIntensity, t);
-            pieceImage.color = Color.Lerp(originalColor, shineColor, t);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+            rectTransform.DOPunchScale(originalScale * 0.02f, 0.6f, 1, 0.5f);
+        });
 
-        // Фаза 2: Возврат к исходному состоянию
-        elapsed = 0f;
-        while (elapsed < halfDuration)
-        {
-            float t = elapsed / halfDuration;
-            rectTransform.localScale = Vector3.Lerp(originalScale * bounceIntensity, originalScale, t);
-            pieceImage.color = Color.Lerp(shineColor, originalColor, t);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // Гарантируем точное восстановление
-        rectTransform.localScale = originalScale;
-        pieceImage.color = originalColor;
     }
 
     // Новый метод для сброса Z-координаты
@@ -297,4 +392,5 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         localPosition.z = 0;
         rectTransform.localPosition = localPosition;
     }
+
 }
