@@ -123,6 +123,8 @@ public class PuzzleGenerator : MonoBehaviour
         PlayerPrefs.SetFloat("LastPuzzleTime", elapsedTime);
         PlayerPrefs.SetString("LastCompletedLevel", GameData.SelectedLevel);
         PlayerPrefs.Save();
+
+        PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime);
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
 
         if (levelCompleteUI != null)

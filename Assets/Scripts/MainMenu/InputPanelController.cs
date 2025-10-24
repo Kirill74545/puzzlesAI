@@ -594,4 +594,5 @@ public class InputPanelController : MonoBehaviour
         rect.DOScale(0.9f, 0.1f)
             .OnComplete(() => rect.DOScale(1f, 0.1f).SetEase(Ease.OutBack));
     }
+
 }
