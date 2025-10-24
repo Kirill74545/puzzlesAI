@@ -1,8 +1,8 @@
-using UnityEngine;
-using UnityEngine.UI;
+using DG.Tweening;
 using System.Collections.Generic;
 using TMPro;
-using DG.Tweening;
+using UnityEngine.UI;
+using UnityEngine;
 
 public class PuzzleGenerator : MonoBehaviour
 {
@@ -20,7 +20,7 @@ public class PuzzleGenerator : MonoBehaviour
     private Texture2D fullTexture;
 
     [Header("Таймер")]
-    public TextMeshProUGUI timerText; 
+    public TextMeshProUGUI timerText;
 
     private float elapsedTime = 0f;
     private bool isTimerRunning = false;
@@ -53,9 +53,14 @@ public class PuzzleGenerator : MonoBehaviour
         if (inputMode == "user image")
         {
             fullTexture = GameData.UserImage;
-            Debug.Log(fullTexture != null
-                ? $"Получено пользовательское изображение: {fullTexture.width}x{fullTexture.height}"
-                : "UserImage is NULL!");
+
+            // Если null — грузим из PlayerPrefs
+            if (fullTexture == null)
+            {
+                fullTexture = LoadUserImageFromPlayerPrefs();
+            }
+
+            Debug.Log(fullTexture != null ? $"Пользовательское изображение: {fullTexture.width}x{fullTexture.height}" : "UserImage is NULL!");
         }
         else
         {
@@ -145,7 +150,7 @@ public class PuzzleGenerator : MonoBehaviour
     {
         if (dropZone != null)
         {
-            dropZone.gridSize = gridSize; 
+            dropZone.gridSize = gridSize;
         }
 
         if (fullTexture == null || dropZone == null || puzzlePiecePrefab == null)

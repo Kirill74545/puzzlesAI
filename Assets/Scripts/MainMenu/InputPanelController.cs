@@ -250,7 +250,7 @@ public class InputPanelController : MonoBehaviour
     {
         HideInputElements();
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+        #if UNITY_ANDROID && !UNITY_EDITOR
         NativeGallery.GetImageFromGallery((path) =>
         {
             if (path != null)
@@ -282,7 +282,7 @@ public class InputPanelController : MonoBehaviour
                 ShowInputElements();
             }
         }, "Выберите изображение", "image/*");
-#else
+        #else
         Debug.Log("В редакторе Unity функционал галереи недоступен");
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
@@ -294,7 +294,7 @@ public class InputPanelController : MonoBehaviour
         }
 
         StartCoroutine(ProcessUserImageSubmission());
-#endif
+        #endif
     }
 
     void HideInputElements()
@@ -395,6 +395,9 @@ public class InputPanelController : MonoBehaviour
             loadingIndicator.SetActive(false);
             isRotating = false;
         }
+
+        GameData.InputMode = "user image";
+        GameData.UserImage = userTexture;
 
         SetUserPromptImage();
 
@@ -586,6 +589,7 @@ public class InputPanelController : MonoBehaviour
     public void AnimateButtonPress(Button button)
     {
         if (button == null) return;
+        AudioManager.Instance?.PlayButtonClick();
         var rect = button.GetComponent<RectTransform>();
         rect.DOScale(0.9f, 0.1f)
             .OnComplete(() => rect.DOScale(1f, 0.1f).SetEase(Ease.OutBack));

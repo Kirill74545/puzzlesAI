@@ -1099,6 +1099,9 @@ MonoBehaviour:
   sprites:
   - {fileID: -803282116596027597, guid: 03594774ca1710f408bdc800472f6f23, type: 3}
   - {fileID: 3813001386259728565, guid: 3cf5719648a428240874bdba3061c771, type: 3}
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
 --- !u!225 &646200045
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1825,6 +1828,9 @@ MonoBehaviour:
   sprites:
   - {fileID: -6172141042010109063, guid: 2b6e27f6d4a3bda4f8fb7055620405cd, type: 3}
   - {fileID: -8316461895080012655, guid: af2f653dba76b8b4fb849a95009d65fa, type: 3}
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
 --- !u!225 &1622312257
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1875,7 +1881,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -29.84, y: 36.05}
+  m_AnchoredPosition: {x: -16.35, y: -14.88}
   m_SizeDelta: {x: 159.67, y: 172.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1708482973
@@ -1905,6 +1911,10 @@ MonoBehaviour:
   completionTimeText: {fileID: 723321880}
   returnToMenuButton: {fileID: 1740469692}
   fireworksEffect: {fileID: 2134259227}
+  appearDuration: 0.6
+  textDelay: 0.3
+  panelEase: 27
+  textEase: 3
 --- !u!1 &1740469690
 GameObject:
   m_ObjectHideFlags: 0

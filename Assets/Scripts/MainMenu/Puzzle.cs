@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Puzzle : MonoBehaviour
 {
-    public PlayerProgression levelSystem; 
+    public PlayerLevelSystem levelSystem; 
 
     // Это должно задаваться вручную
     public float referenceTime = 60f;   // эталон

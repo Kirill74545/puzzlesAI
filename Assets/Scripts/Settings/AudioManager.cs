@@ -6,10 +6,19 @@ public class AudioManager : MonoBehaviour
 
     [Header("Ссылки")]
     public AudioSource musicSource;
+    public AudioClip buttonClickSFX;      // звук обычной кнопки
+    public AudioClip toggleSwitchSFX;     // звук переключателя 
+    public AudioClip puzzlePickupSFX;   // звук взятия пазла
+    public AudioClip puzzleCorrectSFX;  // звук правильной установки
+    public AudioClip puzzleReturnSFX;   // звук возврата в список
+    public AudioClip levelCompleteSFX; // звук победы
 
     [Header("Настройки")]
     public bool musicOn = true;
     public bool soundOn = true;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+
+    private AudioSource sfxSource;
 
     private void Awake()
     {
@@ -25,6 +34,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
+        // Настройка музыки
         if (musicSource == null)
         {
             musicSource = gameObject.AddComponent<AudioSource>();
@@ -32,7 +42,35 @@ public class AudioManager : MonoBehaviour
             musicSource.loop = true;
         }
 
+        // Создаём отдельный источник для SFX (чтобы не мешать музыке)
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+        sfxSource.loop = false;
+        sfxSource.volume = sfxVolume;
+
         ApplyMusicVolume();
+        ApplySoundVolume();
+    }
+
+    public void PlayOneShotSFX(AudioClip clip)
+    {
+        if (!soundOn || clip == null || sfxSource == null) return;
+        sfxSource.PlayOneShot(clip, sfxVolume);
+    }
+
+    public void PlayButtonClick()
+    {
+        if (!soundOn || buttonClickSFX == null) return;
+        sfxSource.PlayOneShot(buttonClickSFX, sfxVolume);
+    }
+
+    public void PlayToggleSound()
+    {
+        if (!soundOn) return;
+        if (toggleSwitchSFX != null)
+            sfxSource.PlayOneShot(toggleSwitchSFX, sfxVolume);
+        else
+            PlayButtonClick(); // fallback
     }
 
     public void ToggleMusic()
@@ -59,7 +97,10 @@ public class AudioManager : MonoBehaviour
 
     public void ApplySoundVolume()
     {
-        // Заглушка для будущего
+        if (sfxSource != null)
+        {
+            sfxSource.mute = !soundOn;
+        }
     }
 
     private void SaveSettings()

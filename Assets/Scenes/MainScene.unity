@@ -1236,6 +1236,9 @@ MonoBehaviour:
   sprites:
   - {fileID: -803282116596027597, guid: 03594774ca1710f408bdc800472f6f23, type: 3}
   - {fileID: 3813001386259728565, guid: 3cf5719648a428240874bdba3061c771, type: 3}
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
 --- !u!225 &646200045
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3977,6 +3980,9 @@ MonoBehaviour:
   sprites:
   - {fileID: -6172141042010109063, guid: 2b6e27f6d4a3bda4f8fb7055620405cd, type: 3}
   - {fileID: -8316461895080012655, guid: af2f653dba76b8b4fb849a95009d65fa, type: 3}
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
 --- !u!225 &1622312257
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -4730,6 +4736,30 @@ PrefabInstance:
       propertyPath: musicSource
       value: 
       objectReference: {fileID: 1133302799951486857}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: buttonClickSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 5d1572da80f8fca4bbd38388ff4c73e3, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: puzzlePickupSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 4e54f20fa92944c498f93453e5444d94, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: puzzleReturnSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 0c681b9b70d0e254e935c2043ee18926, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: toggleSwitchSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 4f1d9559cf3ea0d42aa115196bc817b1, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: levelCompleteSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: ab5439423b21b7146ba10fa6bd44e011, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: puzzleCorrectSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 20b1bc9fd19066d4280f5cd0c867c0e8, type: 3}
     - target: {fileID: 8006418259864126485, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
       propertyPath: m_Name
       value: AudioManager
@@ -4761,7 +4791,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 4bb6e19b7cf48f4408f84284b6cbfe39, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.22
   m_Pitch: 1
   Loop: 1
   Mute: 0

@@ -22,7 +22,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public Vector2 targetSizeInDropZone;
 
-    private Image pieceImage; // ссылка на изображение пазла
+    public Image pieceImage; // ссылка на изображение пазла
     public Color shineColor = new Color(1f, 1f, 0.8f, 1f); // тёплый "сияющий" цвет (почти белый с жёлтым оттенком)
     public float bounceIntensity = 1.2f; // на сколько увеличивать при прыжке
     public float effectDuration = 0.4f; // общая длительность эффекта 
@@ -56,6 +56,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         if (eventData.clickCount == 2 && wasPlacedInDropZone && !isCorrectlyPlaced)
         {
             ReturnToScrollRectIfIncorrect();
+            PlayReturnSound();
         }
     }
 
@@ -138,6 +139,8 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
         canvasGroup.blocksRaycasts = false;
         canvasGroup.alpha = 0.6f;
+
+        PlayPickupSound();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -235,6 +238,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
                 this.enabled = false; // больше нельзя тащить
 
                 PlayBounceAndShineEffect();
+                PlayCorrectSound();
 
                 // Отключаем raycast
                 if (canvasGroup != null)
@@ -260,6 +264,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         else if (isInsideScrollRect && scrollRectContent != null)
         {
             ReturnToScrollRect();
+            PlayReturnSound();
         }
         else
         {
@@ -305,6 +310,21 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         ResetZPosition();
 
         Debug.Log($"Пазл [{targetRow},{targetCol}] возвращён в ScrollRect через перетаскивание.");
+    }
+
+    private void PlayPickupSound()
+    {
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.puzzlePickupSFX);
+    }
+
+    private void PlayCorrectSound()
+    {
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.puzzleCorrectSFX);
+    }
+
+    private void PlayReturnSound()
+    {
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.puzzleReturnSFX);
     }
 
     private void ReturnToDropZonePosition()

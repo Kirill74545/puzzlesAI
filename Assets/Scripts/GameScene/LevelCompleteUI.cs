@@ -3,22 +3,44 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using DG.Tweening;
 
 public class LevelCompleteUI : MonoBehaviour
 {
+    [Header("UI Elements")]
     public TextMeshProUGUI completionTimeText;
     public Button returnToMenuButton;
+
+    [Header("Effects")]
     public ParticleSystem fireworksEffect;
 
+    [Header("Animation Settings")]
+    [SerializeField] private float appearDuration = 0.6f;
+    [SerializeField] private float textDelay = 0.3f;
+    [SerializeField] private Ease panelEase = Ease.OutBack;
+    [SerializeField] private Ease textEase = Ease.OutSine;
+
     private CanvasGroup canvasGroup;
+    private RectTransform rectTransform;
 
     void Awake()
     {
+        rectTransform = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
-        if (returnToMenuButton != null)
-            returnToMenuButton.onClick.AddListener(ReturnToMainMenu);
 
-        // Скрываем при старте
+        if (returnToMenuButton != null)
+        {
+            returnToMenuButton.onClick.AddListener(() =>
+            {
+                // Анимация нажатия кнопки
+                AnimateButtonPress(returnToMenuButton);
+                // Звук
+                AudioManager.Instance?.PlayButtonClick();
+                // Возврат
+                ReturnToMainMenu();
+            });
+        }
+
         gameObject.SetActive(false);
     }
 
@@ -27,7 +49,8 @@ public class LevelCompleteUI : MonoBehaviour
         // Форматируем время
         int minutes = Mathf.FloorToInt(completionTime / 60);
         int seconds = Mathf.FloorToInt(completionTime % 60);
-        completionTimeText.text = $"Пазл собран за\n{minutes:00}:{seconds:00}!";
+        string timeStr = $"{minutes:00}:{seconds:00}";
+        completionTimeText.text = $"Пазл собран за\n{timeStr}!";
 
         // Включаем панель
         gameObject.SetActive(true);
@@ -35,35 +58,41 @@ public class LevelCompleteUI : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        // Запускаем плавное появление
-        StartCoroutine(FadeIn());
+        // Сбрасываем трансформ
+        rectTransform.localScale = Vector3.zero;
+        completionTimeText.alpha = 0f;
 
-        // Фейерверк
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.levelCompleteSFX);
+
+        // Фейерверк 
         if (fireworksEffect != null)
-            fireworksEffect.Play();
-    }
-
-    private IEnumerator FadeIn()
-    {
-        float duration = 0.6f;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
         {
-            canvasGroup.alpha = elapsed / duration;
-            elapsed += Time.unscaledDeltaTime;
-            yield return null;
+            fireworksEffect.Stop();
+            DOVirtual.DelayedCall(0.4f, () => fireworksEffect.Play());
         }
 
-        canvasGroup.alpha = 1f;
-        canvasGroup.interactable = true;
-        canvasGroup.blocksRaycasts = true;
+        // Анимация появления панели
+        rectTransform.DOScale(1f, appearDuration).SetEase(panelEase);
+        canvasGroup.DOFade(1f, appearDuration).OnComplete(() =>
+        {
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+        });
+
+        // Анимация текста с задержкой
+        DOVirtual.DelayedCall(textDelay, () =>
+        {
+            completionTimeText.DOFade(1f, appearDuration * 0.7f).SetEase(textEase);
+        });
     }
 
     public void Hide()
     {
         if (fireworksEffect != null && fireworksEffect.isPlaying)
             fireworksEffect.Stop();
+
+        DOTween.Kill(gameObject);
+
         gameObject.SetActive(false);
     }
 
@@ -71,5 +100,13 @@ public class LevelCompleteUI : MonoBehaviour
     {
         Hide();
         SceneManager.LoadScene("MainScene");
+    }
+
+    private void AnimateButtonPress(Button button)
+    {
+        if (button == null) return;
+        var rect = button.GetComponent<RectTransform>();
+        rect.DOScale(0.9f, 0.1f)
+            .OnComplete(() => rect.DOScale(1f, 0.1f).SetEase(Ease.OutBack));
     }
 }

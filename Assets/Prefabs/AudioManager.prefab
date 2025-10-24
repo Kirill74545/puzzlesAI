@@ -46,8 +46,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   musicSource: {fileID: 727859995402652259}
+  buttonClickSFX: {fileID: 8300000, guid: 5d1572da80f8fca4bbd38388ff4c73e3, type: 3}
+  toggleSwitchSFX: {fileID: 8300000, guid: 4f1d9559cf3ea0d42aa115196bc817b1, type: 3}
+  puzzlePickupSFX: {fileID: 8300000, guid: 4e54f20fa92944c498f93453e5444d94, type: 3}
+  puzzleCorrectSFX: {fileID: 8300000, guid: 20b1bc9fd19066d4280f5cd0c867c0e8, type: 3}
+  puzzleReturnSFX: {fileID: 8300000, guid: 0c681b9b70d0e254e935c2043ee18926, type: 3}
+  levelCompleteSFX: {fileID: 8300000, guid: ab5439423b21b7146ba10fa6bd44e011, type: 3}
   musicOn: 1
   soundOn: 1
+  sfxVolume: 1
 --- !u!82 &727859995402652259
 AudioSource:
   m_ObjectHideFlags: 0
