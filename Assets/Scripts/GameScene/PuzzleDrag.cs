@@ -233,6 +233,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
                     dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
                 );
                 rectTransform.anchoredPosition = perfectPosition;
+                rectTransform.SetAsFirstSibling();
 
                 isCorrectlyPlaced = true;
                 this.enabled = false; // больше нельзя тащить
@@ -256,6 +257,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
                 rectTransform.anchoredPosition = dropPosition;
                 isCorrectlyPlaced = false;
+                rectTransform.SetAsLastSibling();
             }
 
             wasPlacedInDropZone = true;

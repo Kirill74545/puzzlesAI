@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 03594774ca1710f408bdc800472f6f23
+guid: 1268fc220d305b64db157dd7cff46787
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -803282116596027597
-    second: 1758923638 (1)_0
+      213: 7906398941777822919
+    second: knopki_0
+  - first:
+      213: 4434401994735805367
+    second: knopki_1
+  - first:
+      213: -9034564771145961144
+    second: knopki_2
+  - first:
+      213: -5450257326233127936
+    second: knopki_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +122,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1758923638 (1)_0
+      name: knopki_0
       rect:
         serializedVersion: 2
-        x: 101
-        y: 33
-        width: 920
-        height: 912
+        x: 4
+        y: 952
+        width: 895
+        height: 902
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +137,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 33faed1cb2b2ad4f0800000000000000
-      internalID: -803282116596027597
+      spriteID: 7c4013992fb29bd60800000000000000
+      internalID: 7906398941777822919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: knopki_1
+      rect:
+        serializedVersion: 2
+        x: 927
+        y: 956
+        width: 893
+        height: 904
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b3e287ae192a8d30800000000000000
+      internalID: 4434401994735805367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: knopki_2
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 32
+        width: 896
+        height: 902
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84136933537ce9280800000000000000
+      internalID: -9034564771145961144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: knopki_3
+      rect:
+        serializedVersion: 2
+        x: 927
+        y: 36
+        width: 894
+        height: 904
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0047767a6dbcc54b0800000000000000
+      internalID: -5450257326233127936
       vertices: []
       indices: 
       edges: []
@@ -148,7 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1758923638 (1)_0: -803282116596027597
+      knopki_0: 7906398941777822919
+      knopki_1: 4434401994735805367
+      knopki_2: -9034564771145961144
+      knopki_3: -5450257326233127936
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

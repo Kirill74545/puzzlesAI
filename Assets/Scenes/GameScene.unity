@@ -1065,7 +1065,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3813001386259728565, guid: 3cf5719648a428240874bdba3061c771, type: 3}
+  m_Sprite: {fileID: 4434401994735805367, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1097,8 +1097,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChangeButtonSprite
   toggleType: 1
   sprites:
-  - {fileID: -803282116596027597, guid: 03594774ca1710f408bdc800472f6f23, type: 3}
-  - {fileID: 3813001386259728565, guid: 3cf5719648a428240874bdba3061c771, type: 3}
+  - {fileID: -5450257326233127936, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
+  - {fileID: 4434401994735805367, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
   animationDuration: 0.25
   easeIn: 26
   easeOut: 27
@@ -1794,7 +1794,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -8316461895080012655, guid: af2f653dba76b8b4fb849a95009d65fa, type: 3}
+  m_Sprite: {fileID: 7906398941777822919, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1826,8 +1826,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChangeButtonSprite
   toggleType: 0
   sprites:
-  - {fileID: -6172141042010109063, guid: 2b6e27f6d4a3bda4f8fb7055620405cd, type: 3}
-  - {fileID: -8316461895080012655, guid: af2f653dba76b8b4fb849a95009d65fa, type: 3}
+  - {fileID: -9034564771145961144, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
+  - {fileID: 7906398941777822919, guid: 1268fc220d305b64db157dd7cff46787, type: 3}
   animationDuration: 0.25
   easeIn: 26
   easeOut: 27
