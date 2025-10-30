@@ -52,4 +52,12 @@ public class PlayerLevelSystem : MonoBehaviour
 
     public int GetTotalScore() => currentScore;
     public int GetCurrentLevel() => currentLevel;
+
+    // Новый метод: сколько очков нужно до следующего уровня
+    public int GetScoreToNextLevel()
+    {
+        int nextLevel = currentLevel + 1;
+        int needed = Mathf.RoundToInt(50 * Mathf.Pow(nextLevel, 1.2f));
+        return Mathf.Max(0, needed - currentScore);
+    }
 }
