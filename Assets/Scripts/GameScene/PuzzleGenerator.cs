@@ -28,6 +28,7 @@ public class PuzzleGenerator : MonoBehaviour
     private int correctlyPlacedCount = 0;
 
     public LevelCompleteUI levelCompleteUI;
+    public Puzzle puzzle;
 
 
     void Start()
@@ -126,6 +127,8 @@ public class PuzzleGenerator : MonoBehaviour
 
         PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime);
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
+
+        puzzle?.OnPuzzleCompleted();
 
         if (levelCompleteUI != null)
         {
@@ -284,6 +287,33 @@ public class PuzzleGenerator : MonoBehaviour
         correctlyPlacedCount = 0;
         elapsedTime = 0f;
         StartTimerWithAnimation();
+
+        if (puzzle != null)
+        {
+            switch (GameData.SelectedLevel)
+            {
+                case "level1":
+                    puzzle.referenceTime = 30f;
+                    puzzle.difficultyMult = 1f;
+                    break;
+                case "level2":
+                    puzzle.referenceTime = 90f;
+                    puzzle.difficultyMult = 1.3f;
+                    break;
+                case "level3":
+                    puzzle.referenceTime = 300f;
+                    puzzle.difficultyMult = 1.6f;
+                    break;
+                case "level4":
+                    puzzle.referenceTime = 600f;
+                    puzzle.difficultyMult = 2f;
+                    break;
+                default:
+                    puzzle.referenceTime = 30f;
+                    puzzle.difficultyMult = 1f;
+                    break;
+            }
+        }
     }
 
     Texture2D LoadUserImageFromPlayerPrefs()

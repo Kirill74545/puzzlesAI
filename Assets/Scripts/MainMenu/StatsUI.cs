@@ -88,8 +88,17 @@ public class StatsUI : MonoBehaviour
 
     private void UpdateStatsText()
     {
-        var levelNames = new string[] { "level1", "level2", "level3", "level4" };
+        var levelSystem = Object.FindFirstObjectByType<PlayerLevelSystem>();
+
+        int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
+        int currentLevel = PlayerPrefs.GetInt("PlayerCurrentLevel", 1);
         string output = "<b><size=40>СТАТИСТИКА ПАЗЛОВ</size></b>\n\n";
+
+        output += $"<b>Всего очков:</b> {totalScore}\n";
+        output += $"<b>Текущий уровень:</b> {currentLevel}\n\n";
+
+        // Статистика по уровням
+        var levelNames = new string[] { "level1", "level2", "level3", "level4" };
 
         foreach (var level in levelNames)
         {

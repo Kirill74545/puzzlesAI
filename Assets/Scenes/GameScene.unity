@@ -746,7 +746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.88113207, g: 0.9864751, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1275,6 +1275,8 @@ GameObject:
   - component: {fileID: 843551288}
   - component: {fileID: 843551287}
   - component: {fileID: 843551289}
+  - component: {fileID: 843551290}
+  - component: {fileID: 843551291}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1330,6 +1332,34 @@ MonoBehaviour:
   spacing: 10
   timerText: {fileID: 224619207}
   levelCompleteUI: {fileID: 1708482974}
+  puzzle: {fileID: 843551290}
+--- !u!114 &843551290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843551286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766df149da8404e49bae44d824214ab4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Puzzle
+  levelSystem: {fileID: 843551291}
+  referenceTime: 60
+  difficultyMult: 1
+--- !u!114 &843551291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843551286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa14e8a67370ff64cb6cef643eb3f6d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLevelSystem
 --- !u!1 &942265499
 GameObject:
   m_ObjectHideFlags: 0

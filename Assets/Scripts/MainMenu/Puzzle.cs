@@ -13,6 +13,16 @@ public class Puzzle : MonoBehaviour
     void Start()
     {
         startTime = Time.time;
+        
+        if (levelSystem == null)
+        {
+            levelSystem = GetComponent<PlayerLevelSystem>();
+        }
+
+        if (levelSystem == null)
+        {
+            Debug.LogError("Puzzle: не удалось найти PlayerLevelSystem ни в инспекторе, ни на этом объекте!");
+        }
     }
 
     public void OnPuzzleCompleted()

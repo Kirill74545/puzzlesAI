@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzlePieceDragHandler
   targetSizeInDropZone: {x: 0, y: 0}
-  pieceImage: {fileID: 5916169925607338065}
+  pieceImage: {fileID: 0}
   shineColor: {r: 1, g: 1, b: 0.8, a: 1}
   bounceIntensity: 1.2
   effectDuration: 0.4
