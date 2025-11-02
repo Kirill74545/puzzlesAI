@@ -448,6 +448,7 @@ GameObject:
   m_Component:
   - component: {fileID: 211363430}
   - component: {fileID: 211363429}
+  - component: {fileID: 211363431}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -501,6 +502,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &211363431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 211363428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d68989f362af9ce458628058d3c26aa7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gen_image_AI
+  serverIP: 80.64.24.133
+  serverPort: 8000
 --- !u!1 &219140272
 GameObject:
   m_ObjectHideFlags: 0
