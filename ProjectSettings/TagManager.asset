@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - DropZone
+  - Puck
   layers:
   - Default
   - TransparentFX

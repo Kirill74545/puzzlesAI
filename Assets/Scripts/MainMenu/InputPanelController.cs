@@ -59,6 +59,8 @@ public class InputPanelController : MonoBehaviour
     private bool _isRandomButtonVisible = false;
     private bool _isUserImageButtonVisible = false;
 
+    public AeroHockeyMiniGame miniGame;
+
     void Start()
     {
         // Получаем компоненты панели
@@ -315,6 +317,10 @@ public class InputPanelController : MonoBehaviour
 
     IEnumerator ProcessSubmission()
     {
+        // Скрываем элементы ввода
+        HideInputElements();
+
+        // Включаем индикатор загрузки и анимацию вращения
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(true);
@@ -324,6 +330,7 @@ public class InputPanelController : MonoBehaviour
         Texture2D loadedTexture = null;
         bool fromResources = false;
 
+        // Проверяем, есть ли изображение в Resources
         Sprite spriteFromResources = Resources.Load<Sprite>(savedInput);
         if (spriteFromResources != null && spriteFromResources.texture != null)
         {
@@ -331,15 +338,32 @@ public class InputPanelController : MonoBehaviour
             fromResources = true;
             Debug.Log($"✅ Изображение '{savedInput}' найдено в Resources. Пропускаем генерацию ИИ.");
         }
-        else
+
+        // Если изображения нет в Resources — запускаем ИИ
+        if (loadedTexture == null)
         {
             if (aiGenerator != null)
             {
-                Debug.Log($"🔄 Изображение '{savedInput}' не найдено в Resources. Запускаем генерацию через ИИ...");
+                Debug.Log($"🔄 Изображение '{savedInput}' не найдено. Запускаем генерацию через ИИ...");
+
+                // ЗАПУСКАЕМ МИНИ-ИГРУ ВО ВРЕМЯ ОЖИДАНИЯ
+                if (miniGame != null)
+                {
+                    miniGame.StartMiniGame();
+                }
+
+                // Ждём результат от ИИ
                 yield return StartCoroutine(aiGenerator.GenerateImage(savedInput, (tex) => loadedTexture = tex));
+
+                // ОСТАНАВЛИВАЕМ МИНИ-ИГРУ
+                if (miniGame != null)
+                {
+                    miniGame.StopMiniGame();
+                }
             }
             else
             {
+                // Fallback, если ИИ не подключён
                 yield return new WaitForSeconds(2f);
                 Debug.LogWarning("Gen_image_AI не найден. Используется fallback 'banana'.");
                 spriteFromResources = Resources.Load<Sprite>("banana");
@@ -348,12 +372,14 @@ public class InputPanelController : MonoBehaviour
             }
         }
 
+        // Останавливаем индикатор загрузки
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(false);
             isRotating = false;
         }
 
+        // Устанавливаем результат
         if (loadedTexture != null)
         {
             if (fromResources)
