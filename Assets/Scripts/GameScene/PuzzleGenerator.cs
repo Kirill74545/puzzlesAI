@@ -51,7 +51,7 @@ public class PuzzleGenerator : MonoBehaviour
         }
 
         // Загружаем изображение
-        if (inputMode == "user image")
+        if (inputMode == "user image" || inputMode == "web image")
         {
             fullTexture = GameData.UserImage;
 
