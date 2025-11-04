@@ -3,13 +3,14 @@ using TMPro;
 using DG.Tweening;
 using UnityEngine.UI;
 
-public class StatsUI : MonoBehaviour
+public class StatsUI : MonoBehaviour, ICloseable
 {
     [Header("Ссылки")]
     public GameObject statsPanel;          // Вся панель (включая фон)
     public TextMeshProUGUI statsContent;   // Текст статистики
     public Button statsToggleButton;       // Кнопка "Статистика" (одна и та же для открытия/закрытия)
     public GameObject backgroundBlocker;   // Прозрачный фон-блокер (дочерний элемент statsPanel)
+    public ProgressPopupUI progressPopupUI;
 
     [Header("Анимация")]
     public Vector2 appearPosition = new Vector2(0, 0);
@@ -20,7 +21,7 @@ public class StatsUI : MonoBehaviour
     public Ease disappearEase = Ease.InBack;
 
     private RectTransform panelRect;
-    private bool isStatsPanelOpen = false;
+    public bool isStatsPanelOpen = false;
     private InputPanelController inputPanelController;
 
     void Start()
@@ -51,15 +52,21 @@ public class StatsUI : MonoBehaviour
     {
         if (isStatsPanelOpen)
         {
-            HideStats();
+            Close();
         }
         else
         {
-            ShowStats();
+            PopupManager.Instance.RequestOpen(this);
+            ShowStatsInternal();
         }
     }
 
-    public void ShowStats()
+    public void Close()
+    {
+        HideStats();
+    }
+
+    private void ShowStatsInternal()
     {
         if (isStatsPanelOpen) return;
 
@@ -67,7 +74,23 @@ public class StatsUI : MonoBehaviour
         statsPanel.SetActive(true);
         UpdateStatsText();
 
-        // Анимация появления
+        panelRect.anchoredPosition = hiddenPosition;
+        panelRect.DOAnchorPos(appearPosition, appearDuration).SetEase(appearEase);
+    }
+
+    public void ShowStats()
+    {
+        if (isStatsPanelOpen) return;
+
+        if (progressPopupUI != null && progressPopupUI.isOpen)
+        {
+            progressPopupUI.HidePopup();
+        }
+
+        isStatsPanelOpen = true;
+        statsPanel.SetActive(true);
+        UpdateStatsText();
+
         panelRect.anchoredPosition = hiddenPosition;
         panelRect.DOAnchorPos(appearPosition, appearDuration).SetEase(appearEase);
     }
@@ -83,6 +106,7 @@ public class StatsUI : MonoBehaviour
                   .OnComplete(() =>
                   {
                       statsPanel.SetActive(false);
+                      PopupManager.Instance.NotifyClosed(this);
                   });
     }
 

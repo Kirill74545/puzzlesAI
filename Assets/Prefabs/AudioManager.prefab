@@ -48,10 +48,11 @@ MonoBehaviour:
   musicSource: {fileID: 727859995402652259}
   buttonClickSFX: {fileID: 8300000, guid: 5d1572da80f8fca4bbd38388ff4c73e3, type: 3}
   toggleSwitchSFX: {fileID: 8300000, guid: 4f1d9559cf3ea0d42aa115196bc817b1, type: 3}
-  puzzlePickupSFX: {fileID: 8300000, guid: 4e54f20fa92944c498f93453e5444d94, type: 3}
-  puzzleCorrectSFX: {fileID: 8300000, guid: 20b1bc9fd19066d4280f5cd0c867c0e8, type: 3}
-  puzzleReturnSFX: {fileID: 8300000, guid: 0c681b9b70d0e254e935c2043ee18926, type: 3}
-  levelCompleteSFX: {fileID: 8300000, guid: ab5439423b21b7146ba10fa6bd44e011, type: 3}
+  puzzlePickupSFX: {fileID: 8300000, guid: 1b73cc503454ff646b7d1d30d554bd39, type: 3}
+  puzzleCorrectSFX: {fileID: 8300000, guid: 5f139db5fd478b84dbcfbcc3a7c6f005, type: 3}
+  puzzleReturnSFX: {fileID: 8300000, guid: 080a33a8079ad15439e83b8f613eae99, type: 3}
+  levelCompleteSFX: {fileID: 8300000, guid: a9002a5f5427ead4c998ed2d76dd6c89, type: 3}
+  coinCollectSFX: {fileID: 8300000, guid: 990783b89b49cea49ad47ef41646bbf5, type: 3}
   musicOn: 1
   soundOn: 1
   sfxVolume: 1
@@ -66,7 +67,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: c4211f081769c104da1569c1baed5f5c, type: 3}
+  m_Resource: {fileID: 8300000, guid: 7e9e6631d732ac44abcf419ebb7f7a26, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.76
   m_Pitch: 1

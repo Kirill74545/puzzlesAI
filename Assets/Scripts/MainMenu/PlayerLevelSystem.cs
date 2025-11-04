@@ -60,4 +60,26 @@ public class PlayerLevelSystem : MonoBehaviour
         int needed = Mathf.RoundToInt(50 * Mathf.Pow(nextLevel, 1.2f));
         return Mathf.Max(0, needed - currentScore);
     }
+
+    // Сколько очков нужно для достижения уровня (минимальный порог)
+    public int GetScoreRequiredForLevel(int level)
+    {
+        if (level <= 1) return 0;
+        return Mathf.RoundToInt(50 * Mathf.Pow(level, 1.2f));
+    }
+
+    // Сколько очков накоплено в рамках текущего уровня
+    public int GetCurrentLevelProgress()
+    {
+        int scoreForCurrent = GetScoreRequiredForLevel(currentLevel);
+        return currentScore - scoreForCurrent;
+    }
+
+    // Сколько очков всего нужно в текущем уровне (от начала уровня до следующего)
+    public int GetCurrentLevelTotalNeeded()
+    {
+        int scoreForCurrent = GetScoreRequiredForLevel(currentLevel);
+        int scoreForNext = GetScoreRequiredForLevel(currentLevel + 1);
+        return scoreForNext - scoreForCurrent;
+    }
 }

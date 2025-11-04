@@ -11,6 +11,15 @@ public class LevelCompleteUI : MonoBehaviour
     public TextMeshProUGUI completionTimeText;
     public Button returnToMenuButton;
 
+    [Header("Coin Reward Animation")]
+    public GameObject coinPrefab;               // Префаб монеты 
+    public Transform coinTarget;                // Цель: иконка или текст счёта монет
+    public int maxCoinsToShow = 10;             // Макс. кол-во монет в анимации
+    public float coinFlyDuration = 0.7f;
+    public Ease coinFlyEase = Ease.OutCubic;
+    public float coinDelayStep = 0.02f;
+    public Vector2 coinSpawnOffset = Vector2.zero; // Смещение от центра панели
+
     [Header("Effects")]
     public ParticleSystem fireworksEffect;
 
@@ -22,21 +31,21 @@ public class LevelCompleteUI : MonoBehaviour
 
     private CanvasGroup canvasGroup;
     private RectTransform rectTransform;
+    private Canvas cachedCanvas;
 
     void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
+        cachedCanvas = GetComponentInParent<Canvas>();
+
         if (returnToMenuButton != null)
         {
             returnToMenuButton.onClick.AddListener(() =>
             {
-                // Анимация нажатия кнопки
                 AnimateButtonPress(returnToMenuButton);
-                // Звук
                 AudioManager.Instance?.PlayButtonClick();
-                // Возврат
                 ReturnToMainMenu();
             });
         }
@@ -44,7 +53,7 @@ public class LevelCompleteUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Show(float completionTime)
+    public void Show(float completionTime, int coinsEarned)
     {
         // Форматируем время
         int minutes = Mathf.FloorToInt(completionTime / 60);
@@ -60,11 +69,13 @@ public class LevelCompleteUI : MonoBehaviour
 
         // Сбрасываем трансформ
         rectTransform.localScale = Vector3.zero;
-        completionTimeText.alpha = 0f;
+        if (completionTimeText != null)
+            completionTimeText.alpha = 0f;
 
+        // Звук победы
         AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.levelCompleteSFX);
 
-        // Фейерверк 
+        // Фейерверк
         if (fireworksEffect != null)
         {
             fireworksEffect.Stop();
@@ -79,11 +90,16 @@ public class LevelCompleteUI : MonoBehaviour
             canvasGroup.blocksRaycasts = true;
         });
 
-        // Анимация текста с задержкой
-        DOVirtual.DelayedCall(textDelay, () =>
+        // Анимация текста
+        if (completionTimeText != null)
         {
-            completionTimeText.DOFade(1f, appearDuration * 0.7f).SetEase(textEase);
-        });
+            DOVirtual.DelayedCall(textDelay, () =>
+            {
+                completionTimeText.DOFade(1f, appearDuration * 0.7f).SetEase(textEase);
+            });
+        }
+
+        DOVirtual.DelayedCall(0.5f, () => PlayCoinRewardAnimation(coinsEarned));
     }
 
     public void Hide()
@@ -92,7 +108,6 @@ public class LevelCompleteUI : MonoBehaviour
             fireworksEffect.Stop();
 
         DOTween.Kill(gameObject);
-
         gameObject.SetActive(false);
     }
 
@@ -108,5 +123,75 @@ public class LevelCompleteUI : MonoBehaviour
         var rect = button.GetComponent<RectTransform>();
         rect.DOScale(0.9f, 0.1f)
             .OnComplete(() => rect.DOScale(1f, 0.1f).SetEase(Ease.OutBack));
+    }
+
+    private void PlayCoinRewardAnimation(int rewardAmount)
+    {
+        if (coinPrefab == null || coinTarget == null || cachedCanvas == null)
+        {
+            Debug.LogWarning("Coin animation skipped: missing reference.");
+            return;
+        }
+
+        // ПолучаемRectTransform панели и цели
+        RectTransform panelRect = rectTransform;
+        RectTransform targetRect = coinTarget.GetComponent<RectTransform>();
+        if (targetRect == null)
+        {
+            Debug.LogError("Coin target has no RectTransform!");
+            return;
+        }
+
+        Vector2 panelCenterInCanvas = panelRect.anchoredPosition;
+        Vector2 targetPositionInCanvas = targetRect.anchoredPosition;
+
+        int coinsToAnimate = Mathf.Min(rewardAmount, maxCoinsToShow);
+
+        for (int i = 0; i < coinsToAnimate; i++)
+        {
+            GameObject coinGO = Instantiate(coinPrefab, cachedCanvas.transform);
+            coinGO.SetActive(true);
+
+            RectTransform coinRT = coinGO.GetComponent<RectTransform>();
+            if (coinRT == null)
+            {
+                Destroy(coinGO);
+                continue;
+            }
+
+            coinRT.anchoredPosition = panelCenterInCanvas;
+
+            // Отключаем Raycast
+            var image = coinGO.GetComponent<Image>();
+            if (image != null)
+            {
+                image.raycastTarget = false;
+            }
+
+            // Анимация с задержкой
+            float delay = i * coinDelayStep;
+            DOVirtual.DelayedCall(delay, () =>
+            {
+                // Летим к цели
+                coinRT.DOAnchorPos(targetPositionInCanvas, coinFlyDuration)
+                    .SetEase(coinFlyEase)
+                    .OnComplete(() =>
+                    {
+                        if (image != null)
+                        {
+                            image.DOFade(0f, 0.15f).OnComplete(() => Destroy(coinGO));
+                        }
+                        else
+                        {
+                            Destroy(coinGO);
+                        }
+                    });
+
+                // Вращение
+                coinRT.DORotate(Vector3.forward * 360, coinFlyDuration, RotateMode.LocalAxisAdd);
+            });
+        }
+
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.coinCollectSFX);
     }
 }

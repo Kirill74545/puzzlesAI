@@ -12,6 +12,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip puzzleCorrectSFX;  // звук правильной установки
     public AudioClip puzzleReturnSFX;   // звук возврата в список
     public AudioClip levelCompleteSFX; // звук победы
+    public AudioClip coinCollectSFX;
 
     [Header("Ќастройки")]
     public bool musicOn = true;

@@ -128,11 +128,32 @@ public class PuzzleGenerator : MonoBehaviour
         PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime);
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
 
+        int coinsEarned = 0;
+
+        switch (GameData.SelectedLevel)
+        {
+            case "level1": coinsEarned = 5; break;
+            case "level2": coinsEarned = 20; break;
+            case "level3": coinsEarned = 35; break;
+            case "level4": coinsEarned = 50; break;
+        }
+
+        if (coinsEarned > 0)
+        {
+            int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
+            PlayerPrefs.SetInt("TotalCoins", currentCoins + coinsEarned);
+            PlayerPrefs.Save();
+
+            var coinManager = Object.FindFirstObjectByType<CoinManager>();
+            coinManager?.UpdateDisplay();
+            Debug.Log($"Начислено монет: {coinsEarned}. Всего монет: {currentCoins + coinsEarned}");
+        }
+
         puzzle?.OnPuzzleCompleted();
 
         if (levelCompleteUI != null)
         {
-            levelCompleteUI.Show(elapsedTime);
+            levelCompleteUI.Show(elapsedTime, coinsEarned);
         }
         else
         {

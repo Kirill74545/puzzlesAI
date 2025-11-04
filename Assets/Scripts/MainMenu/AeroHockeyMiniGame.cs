@@ -48,7 +48,31 @@ public class AeroHockeyMiniGame : MonoBehaviour, IPointerDownHandler, IDragHandl
 
     public void StopMiniGame()
     {
+        if (!isActive) return; 
+
         isActive = false;
+
+        int coins = 0;
+        if (playerScore > aiScore)
+        {
+            coins = 10; 
+        }
+        else if (aiScore > playerScore)
+        {
+            coins = 5;  
+        }
+        else
+        {
+            coins = 5;  
+        }
+
+
+        int totalCoins = PlayerPrefs.GetInt("TotalCoins", 0);
+        PlayerPrefs.SetInt("TotalCoins", totalCoins + coins);
+        PlayerPrefs.Save();
+
+        Debug.Log($"Мини-игра прервана. Счёт: {playerScore}:{aiScore}. Начислено монет: {coins}. Всего: {totalCoins + coins}");
+
         gameObject.SetActive(false);
     }
 
