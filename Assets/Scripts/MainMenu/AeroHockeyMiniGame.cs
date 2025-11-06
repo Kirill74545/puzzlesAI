@@ -23,7 +23,7 @@ public class AeroHockeyMiniGame : MonoBehaviour, IPointerDownHandler, IDragHandl
     private int playerScore = 0;
     private int aiScore = 0;
     private float lastHitTime = 0f;
-    private bool isActive = false;
+    public bool isActive = false;
 
     private Vector2 targetPaddlePosition;
     private Vector2 previousPaddlePosition;
@@ -36,44 +36,28 @@ public class AeroHockeyMiniGame : MonoBehaviour, IPointerDownHandler, IDragHandl
     void Start()
     {
         canvas = GetComponentInParent<Canvas>();
+        // Скрыть игру при старте
+        gameObject.SetActive(false);
         ResetGame();
     }
 
     public void StartMiniGame()
     {
-        isActive = true;
-        gameObject.SetActive(true);
-        ResetGame();
+        if (!isActive)
+        {
+            isActive = true;
+            gameObject.SetActive(true);
+            ResetGame(); // Сбросить счёт и позиции при запуске
+        }
     }
 
     public void StopMiniGame()
     {
-        if (!isActive) return; 
-
-        isActive = false;
-
-        int coins = 0;
-        if (playerScore > aiScore)
+        if (isActive)
         {
-            coins = 10; 
+            isActive = false;
+            gameObject.SetActive(false);
         }
-        else if (aiScore > playerScore)
-        {
-            coins = 5;  
-        }
-        else
-        {
-            coins = 5;  
-        }
-
-
-        int totalCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-        PlayerPrefs.SetInt("TotalCoins", totalCoins + coins);
-        PlayerPrefs.Save();
-
-        Debug.Log($"Мини-игра прервана. Счёт: {playerScore}:{aiScore}. Начислено монет: {coins}. Всего: {totalCoins + coins}");
-
-        gameObject.SetActive(false);
     }
 
     void Update()
@@ -283,7 +267,7 @@ public class AeroHockeyMiniGame : MonoBehaviour, IPointerDownHandler, IDragHandl
     {
         puck.anchoredPosition = Vector2.zero;
 
-        // Задаем случайное направление с преимуществом по X
+        // Задаём случайное направление с преимуществом по X
         Vector2 randomDirection = new Vector2(
             Random.Range(0.3f, 1f) * (Random.value > 0.5f ? 1 : -1),
             Random.Range(-0.7f, 0.7f)

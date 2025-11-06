@@ -37,6 +37,10 @@ public class InputPanelController : MonoBehaviour
     public Button level3Button;
     public Button level4Button;
 
+    [Header("Предупреждение и кнопка аэрохоккея при генерации ИИ")]
+    public GameObject aiWarningText;
+    public Button aeroHockeyButton;
+
     [Header("Параметры анимации")]
     public float appearDuration = 0.5f;
 
@@ -105,6 +109,10 @@ public class InputPanelController : MonoBehaviour
         if (searchWebImageButton != null) searchWebImageButton.gameObject.SetActive(false);
         if (aiGenerateButton != null) aiGenerateButton.gameObject.SetActive(false);
 
+        // Скрыть предупреждение и кнопку аэрохоккея изначально
+        if (aiWarningText != null) aiWarningText.SetActive(false);
+        if (aeroHockeyButton != null) aeroHockeyButton.gameObject.SetActive(false);
+
         // Подписка на события
         if (startButton != null)
             startButton.onClick.AddListener(() => { AnimateButtonPress(startButton); OnStartButtonClicked(); });
@@ -138,6 +146,9 @@ public class InputPanelController : MonoBehaviour
             level3Button.onClick.AddListener(() => { AnimateButtonPress(level3Button); OnLevelSelected("level3"); });
         if (level4Button != null)
             level4Button.onClick.AddListener(() => { AnimateButtonPress(level4Button); OnLevelSelected("level4"); });
+
+        if (aeroHockeyButton != null)
+            aeroHockeyButton.onClick.AddListener(() => { AnimateButtonPress(aeroHockeyButton); OnAeroHockeyButtonClicked(); });
 
         if (inputField != null)
             inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
@@ -190,7 +201,6 @@ public class InputPanelController : MonoBehaviour
                 _isSearchWebImageButtonVisible = false;
             }
         }
-
     }
 
     void OnStartButtonClicked()
@@ -213,7 +223,7 @@ public class InputPanelController : MonoBehaviour
             _isUserImageButtonVisible = true;
         }
 
-        inputField.text = ""; 
+        inputField.text = "";
     }
 
     void OnRandomButtonClicked()
@@ -257,6 +267,10 @@ public class InputPanelController : MonoBehaviour
         savedInput = inputField.text.Trim();
         HideInputElements();
 
+        // Показать предупреждение и кнопку аэрохоккея при ИИ-генерации
+        if (aiWarningText != null) ShowUIElement(aiWarningText);
+        if (aeroHockeyButton != null) ShowUIElement(aeroHockeyButton.gameObject);
+
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(true);
@@ -266,11 +280,28 @@ public class InputPanelController : MonoBehaviour
         StartCoroutine(ProcessSubmission());
     }
 
+    void OnAeroHockeyButtonClicked()
+    {
+        // Скрыть предупреждение и кнопку аэрохоккея
+        if (aiWarningText != null) HideUIElement(aiWarningText);
+        if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
+
+        // Запуск мини-игры аэрохоккея
+        if (miniGame != null)
+        {
+            miniGame.StartMiniGame();
+        }
+        else
+        {
+            Debug.LogWarning("AeroHockeyMiniGame не назначен.");
+        }
+    }
+
     void OnUserImageButtonClicked()
     {
         HideInputElements();
 
-        #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
         NativeGallery.GetImageFromGallery((path) =>
         {
             if (path != null)
@@ -302,7 +333,7 @@ public class InputPanelController : MonoBehaviour
                 ShowInputElements();
             }
         }, "Выберите изображение", "image/*");
-        #else
+#else
         Debug.Log("Галерея недоступна в редакторе");
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
@@ -314,7 +345,7 @@ public class InputPanelController : MonoBehaviour
         }
 
         StartCoroutine(ProcessUserImageSubmission());
-        #endif
+#endif
     }
 
     void OnSearchWebImageButtonClicked()
@@ -340,7 +371,7 @@ public class InputPanelController : MonoBehaviour
     void HideInputElements()
     {
         if (inputField != null) HideUIElement(inputField.gameObject);
-        if (randomButton != null) HideUIElement(randomButton.gameObject); 
+        if (randomButton != null) HideUIElement(randomButton.gameObject);
         if (userImageButton != null) HideUIElement(userImageButton.gameObject);
         if (aiGenerateButton != null) HideUIElement(aiGenerateButton.gameObject);
         if (searchWebImageButton != null) HideUIElement(searchWebImageButton.gameObject);
@@ -369,13 +400,7 @@ public class InputPanelController : MonoBehaviour
         {
             Debug.Log($"Генерация ИИ для: {savedInput}");
 
-            if (miniGame != null)
-                miniGame.StartMiniGame();
-
             yield return StartCoroutine(aiGenerator.GenerateImage(savedInput, (tex) => loadedTexture = tex));
-
-            if (miniGame != null)
-                miniGame.StopMiniGame();
         }
         else
         {
@@ -383,6 +408,12 @@ public class InputPanelController : MonoBehaviour
             Debug.LogWarning("Gen_image_AI не найден. Fallback на 'banana'.");
             Sprite fallback = Resources.Load<Sprite>("banana");
             if (fallback != null) loadedTexture = fallback.texture;
+        }
+
+        // Остановить аэрохоккей после завершения генерации
+        if (miniGame != null && miniGame.isActive)
+        {
+            miniGame.StopMiniGame();
         }
 
         if (loadingIndicator != null)
