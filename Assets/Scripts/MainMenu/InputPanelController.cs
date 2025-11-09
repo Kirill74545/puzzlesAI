@@ -15,6 +15,8 @@ public class InputPanelController : MonoBehaviour
     public Button userImageButton;           // Кнопка загрузки из галереи — исчезает при вводе/рандоме
     public Button searchWebImageButton;      // Кнопка поиска в Openverse
     public Button aiGenerateButton;          // Кнопка генерации через ИИ
+    public Button backToInputButton;         // Кнопка возврата
+    public Button backDuringGenerationButton;
 
     [Header("Дополнительное изображение")]
     public GameObject additionalImage;
@@ -112,6 +114,8 @@ public class InputPanelController : MonoBehaviour
         // Скрыть предупреждение и кнопку аэрохоккея изначально
         if (aiWarningText != null) aiWarningText.SetActive(false);
         if (aeroHockeyButton != null) aeroHockeyButton.gameObject.SetActive(false);
+        if (backToInputButton != null) backToInputButton.gameObject.SetActive(false);
+        if (backDuringGenerationButton != null) backDuringGenerationButton.gameObject.SetActive(false);
 
         // Подписка на события
         if (startButton != null)
@@ -137,6 +141,12 @@ public class InputPanelController : MonoBehaviour
 
         if (randomChoiceButton != null)
             randomChoiceButton.onClick.AddListener(() => { AnimateButtonPress(randomChoiceButton); OnChoiceSelected("random"); });
+
+        if (backToInputButton != null)
+            backToInputButton.onClick.AddListener(OnBackToInputButtonClicked);
+
+        if (backDuringGenerationButton != null)
+            backDuringGenerationButton.onClick.AddListener(OnBackDuringGenerationButtonClicked);
 
         if (level1Button != null)
             level1Button.onClick.AddListener(() => { AnimateButtonPress(level1Button); OnLevelSelected("level1"); });
@@ -270,6 +280,7 @@ public class InputPanelController : MonoBehaviour
         // Показать предупреждение и кнопку аэрохоккея при ИИ-генерации
         if (aiWarningText != null) ShowUIElement(aiWarningText);
         if (aeroHockeyButton != null) ShowUIElement(aeroHockeyButton.gameObject);
+        if (backDuringGenerationButton != null) ShowUIElement(backDuringGenerationButton.gameObject);
 
         if (loadingIndicator != null)
         {
@@ -285,6 +296,7 @@ public class InputPanelController : MonoBehaviour
         // Скрыть предупреждение и кнопку аэрохоккея
         if (aiWarningText != null) HideUIElement(aiWarningText);
         if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
+        if (backDuringGenerationButton != null) ShowUIElement(backDuringGenerationButton.gameObject);
 
         // Запуск мини-игры аэрохоккея
         if (miniGame != null)
@@ -301,7 +313,7 @@ public class InputPanelController : MonoBehaviour
     {
         HideInputElements();
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+        #if UNITY_ANDROID && !UNITY_EDITOR
         NativeGallery.GetImageFromGallery((path) =>
         {
             if (path != null)
@@ -324,16 +336,16 @@ public class InputPanelController : MonoBehaviour
                 else
                 {
                     Debug.LogError("Не удалось загрузить изображение");
-                    ShowInputElements();
+                    ShowInputFieldAndChoiceButtons();
                 }
             }
             else
             {
                 Debug.Log("Выбор отменён");
-                ShowInputElements();
+                ShowInputFieldAndChoiceButtons();
             }
         }, "Выберите изображение", "image/*");
-#else
+        #else
         Debug.Log("Галерея недоступна в редакторе");
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
@@ -345,7 +357,93 @@ public class InputPanelController : MonoBehaviour
         }
 
         StartCoroutine(ProcessUserImageSubmission());
-#endif
+        #endif
+    }
+
+    void ShowInputFieldAndChoiceButtons()
+    {
+        if (inputField != null) ShowUIElement(inputField.gameObject);
+
+        // Показываем кнопку случайного выбора 
+        if (randomButton != null)
+        {
+            ShowUIElement(randomButton.gameObject, 0.2f);
+            _isRandomButtonVisible = true;
+        }
+
+        // Показываем кнопку галереи 
+        if (userImageButton != null)
+        {
+            ShowUIElement(userImageButton.gameObject, 0.2f);
+            _isUserImageButtonVisible = true;
+        }
+
+        if (additionalImage_ != null) ShowUIElement(additionalImage_.gameObject);
+
+        // Также нужно вызвать OnInputFieldValueChanged, чтобы корректно отобразить
+        // кнопки ИИ и Web в зависимости от содержимого поля ввода
+        if (inputField != null)
+        {
+            OnInputFieldValueChanged(inputField.text);
+        }
+    }
+
+    void OnBackToInputButtonClicked()
+    {
+        Debug.Log("Кнопка 'Вернуться' нажата. Сбрасываем изображение и возвращаемся к выбору ввода.");
+
+        // Сбрасываем GameData, связанные с изображением
+        GameData.InputMode = null; // или ""
+        GameData.UserImage = null;
+
+        // Скрываем изображение и кнопку подтверждения
+        if (promptImage != null) HideUIElement(promptImage);
+        if (confirmButton2 != null) HideUIElement(confirmButton2.gameObject);
+
+        // Скрываем кнопку 'Вернуться'
+        if (backToInputButton != null) HideUIElement(backToInputButton.gameObject);
+
+        if (inputField != null) inputField.text = "";
+
+        // Возвращаем элементы ввода
+        ShowInputFieldAndChoiceButtons(); 
+    }
+
+    void OnBackDuringGenerationButtonClicked()
+    {
+        Debug.Log("Кнопка 'Вернуться во время генерации' нажата. Отменяем генерацию и возвращаемся к выбору ввода.");
+
+        // Остановить аэрохоккей, если он был запущен
+        if (miniGame != null && miniGame.isActive)
+        {
+            miniGame.StopMiniGame();
+        }
+
+        // Остановить вращение индикатора
+        isRotating = false;
+        if (loadingIndicator != null)
+        {
+            loadingIndicator.SetActive(false);
+            DOTween.Kill("loadingRotation");
+        }
+
+        // Сбрасываем GameData, связанные с изображением
+        GameData.InputMode = null; // или ""
+        GameData.UserImage = null;
+
+        // Скрываем все элементы, связанные с генерацией
+        if (aiWarningText != null) HideUIElement(aiWarningText);
+        if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
+        if (backDuringGenerationButton != null) HideUIElement(backDuringGenerationButton.gameObject); // НОВОЕ
+        if (promptImage != null) HideUIElement(promptImage); // На всякий случай
+        if (confirmButton2 != null) HideUIElement(confirmButton2.gameObject); // На всякий случай
+        if (backToInputButton != null) HideUIElement(backToInputButton.gameObject); // На всякий случай
+
+        // Очищаем поле ввода
+        if (inputField != null) inputField.text = "";
+
+        // Возвращаем элементы ввода
+        ShowInputFieldAndChoiceButtons();
     }
 
     void OnSearchWebImageButtonClicked()
@@ -438,6 +536,7 @@ public class InputPanelController : MonoBehaviour
 
         if (promptImage != null) ShowUIElement(promptImage);
         if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
     }
 
     IEnumerator ProcessUserImageSubmission()
@@ -456,6 +555,7 @@ public class InputPanelController : MonoBehaviour
 
         if (promptImage != null) ShowUIElement(promptImage);
         if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
     }
 
     IEnumerator FetchImageFromOpenverse(string query)
@@ -512,6 +612,7 @@ public class InputPanelController : MonoBehaviour
 
                     if (promptImage != null) ShowUIElement(promptImage);
                     if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+                    if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
                 }
                 else
                 {
@@ -535,13 +636,14 @@ public class InputPanelController : MonoBehaviour
 
         if (promptImage != null) ShowUIElement(promptImage);
         if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
     }
 
     void OnConfirmButton2Clicked()
     {
         HideUIElement(confirmButton2.gameObject);
         if (promptImage != null) HideUIElement(promptImage);
-
+        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
         if (classikButton != null) ShowUIElement(classikButton.gameObject, 0.3f, 0.1f);
         if (randomChoiceButton != null) ShowUIElement(randomChoiceButton.gameObject, 0.3f, 0.2f);
     }
