@@ -474,6 +474,7 @@ public class InputPanelController : MonoBehaviour
         if (aiGenerateButton != null) HideUIElement(aiGenerateButton.gameObject);
         if (searchWebImageButton != null) HideUIElement(searchWebImageButton.gameObject);
         if (additionalImage_ != null) HideUIElement(additionalImage_.gameObject);
+        if (backToInputButton != null) HideUIElement(backToInputButton.gameObject);
     }
 
     void ShowInputElements()
@@ -643,9 +644,9 @@ public class InputPanelController : MonoBehaviour
     {
         HideUIElement(confirmButton2.gameObject);
         if (promptImage != null) HideUIElement(promptImage);
-        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
         if (classikButton != null) ShowUIElement(classikButton.gameObject, 0.3f, 0.1f);
         if (randomChoiceButton != null) ShowUIElement(randomChoiceButton.gameObject, 0.3f, 0.2f);
+        if (backToInputButton != null) HideUIElement(backToInputButton.gameObject);
     }
 
     void OnChoiceSelected(string choice)
@@ -674,6 +675,8 @@ public class InputPanelController : MonoBehaviour
         if (level2Button != null) HideUIElement(level2Button.gameObject);
         if (level3Button != null) HideUIElement(level3Button.gameObject);
         if (level4Button != null) HideUIElement(level4Button.gameObject);
+
+        if (backToInputButton != null) HideUIElement(backToInputButton.gameObject);
 
         StartCoroutine(ProcessSecondLoading());
     }
