@@ -8,11 +8,16 @@ public class AudioManager : MonoBehaviour
     public AudioSource musicSource;
     public AudioClip buttonClickSFX;      // звук обычной кнопки
     public AudioClip toggleSwitchSFX;     // звук переключателя 
-    public AudioClip puzzlePickupSFX;   // звук взятия пазла
-    public AudioClip puzzleCorrectSFX;  // звук правильной установки
-    public AudioClip puzzleReturnSFX;   // звук возврата в список
-    public AudioClip levelCompleteSFX; // звук победы
-    public AudioClip coinCollectSFX;
+    public AudioClip puzzlePickupSFX;     // звук взятия пазла
+    public AudioClip puzzleCorrectSFX;    // звук правильной установки
+    public AudioClip puzzleReturnSFX;     // звук возврата в список
+    public AudioClip levelCompleteSFX;    // звук победы
+    public AudioClip coinCollectSFX;      // звук сбора монет
+
+    [Header("Звуки магазина фонов")]
+    public AudioClip backgroundPurchaseSFX; // Звук покупки фона
+    public AudioClip backgroundSelectSFX;   // Звук выбора фона
+    public AudioClip backgroundErrorSFX;    // Звук ошибки (не хватает монет/уровня)
 
     [Header("Настройки")]
     public bool musicOn = true;
@@ -71,7 +76,25 @@ public class AudioManager : MonoBehaviour
         if (toggleSwitchSFX != null)
             sfxSource.PlayOneShot(toggleSwitchSFX, sfxVolume);
         else
-            PlayButtonClick(); // fallback
+            PlayButtonClick(); 
+    }
+
+    public void PlayBackgroundPurchase()
+    {
+        if (!soundOn || backgroundPurchaseSFX == null) return;
+        sfxSource.PlayOneShot(backgroundPurchaseSFX, sfxVolume);
+    }
+
+    public void PlayBackgroundSelect()
+    {
+        if (!soundOn || backgroundSelectSFX == null) return;
+        sfxSource.PlayOneShot(backgroundSelectSFX, sfxVolume);
+    }
+
+    public void PlayBackgroundError()
+    {
+        if (!soundOn || backgroundErrorSFX == null) return;
+        sfxSource.PlayOneShot(backgroundErrorSFX, sfxVolume);
     }
 
     public void ToggleMusic()

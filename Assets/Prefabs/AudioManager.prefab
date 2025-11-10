@@ -53,6 +53,9 @@ MonoBehaviour:
   puzzleReturnSFX: {fileID: 8300000, guid: 080a33a8079ad15439e83b8f613eae99, type: 3}
   levelCompleteSFX: {fileID: 8300000, guid: a9002a5f5427ead4c998ed2d76dd6c89, type: 3}
   coinCollectSFX: {fileID: 8300000, guid: 990783b89b49cea49ad47ef41646bbf5, type: 3}
+  backgroundPurchaseSFX: {fileID: 8300000, guid: 1acbc0b9c7477664d8f6525c9f59cc0a, type: 3}
+  backgroundSelectSFX: {fileID: 8300000, guid: a00183bbc2ea2734896760c9facdbed8, type: 3}
+  backgroundErrorSFX: {fileID: 8300000, guid: 39d2815f39bb12947ac940bf64a27123, type: 3}
   musicOn: 1
   soundOn: 1
   sfxVolume: 1

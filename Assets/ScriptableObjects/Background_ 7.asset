@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef774e819fb9fe444992e67e8c963f32, type: 3}
+  m_Name: Background_ 7
+  m_EditorClassIdentifier: Assembly-CSharp::BackgroundDataSO
+  id: 8
+  previewSprite: {fileID: -1278465210595873023, guid: 855743a2bf13dea48ae68cdbd11349c0, type: 3}
+  requiredLevel: 8
+  requiredCoins: 90
+  backgroundName: 
+  description: 

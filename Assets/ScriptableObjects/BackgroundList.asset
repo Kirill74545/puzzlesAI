@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 363c3004a93de1e4297679e9d3bf9dd3, type: 3}
+  m_Name: BackgroundList
+  m_EditorClassIdentifier: Assembly-CSharp::BackgroundListSO
+  backgrounds:
+  - {fileID: 11400000, guid: c9baadc02266547469e6ed53efc0ab3a, type: 2}
+  - {fileID: 11400000, guid: 6b9383fbdb0bc8149ac09dc0ca5ade1c, type: 2}
+  - {fileID: 11400000, guid: fc6102e9c27dce4458e0b8b7a2208af2, type: 2}
+  - {fileID: 11400000, guid: d52d17d1c97a50e4fb266423e4420437, type: 2}
+  - {fileID: 11400000, guid: e4f7fade6a5b5f7478207d5432494367, type: 2}
+  - {fileID: 11400000, guid: 82f164a567b6e5947963c1b00088475f, type: 2}
+  - {fileID: 11400000, guid: 4cd083a63f7d5c54d9afd56d9c3879b5, type: 2}
+  - {fileID: 11400000, guid: bdba472eac5594840b37ff7b92b4bf8b, type: 2}
+  - {fileID: 11400000, guid: f6409afde02e14745bdfe60637e2f1f0, type: 2}
+  - {fileID: 11400000, guid: 97afbcc9bfd12644ebc116bc0226751e, type: 2}
+  - {fileID: 11400000, guid: ad8410c42b0d9f04d8d846f82bcb8a2b, type: 2}
+  - {fileID: 11400000, guid: 07341cdc4fc64b34cbe2b837604172b5, type: 2}
+  - {fileID: 11400000, guid: 4c8f972913ba0624fb083a7000efc5c0, type: 2}
