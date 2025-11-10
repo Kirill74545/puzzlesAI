@@ -367,7 +367,7 @@ public class ProgressPopupUI : MonoBehaviour, ICloseable
             prevPageButton.interactable = currentPage > 0;
 
         if (currentPageText != null)
-            currentPageText.text = $"Страница {currentPage + 1} из {(backgroundDataList.Count - 1) / itemsPerPage + 1}";
+            currentPageText.text = $"Page {currentPage + 1} of {(backgroundDataList.Count - 1) / itemsPerPage + 1}";
     }
 
     [System.Serializable]

@@ -515,6 +515,8 @@ public class InputPanelController : MonoBehaviour
             miniGame.StopMiniGame();
         }
 
+        bool wasAeroHockeyStarted = (miniGame != null && miniGame.isActive);
+
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(false);
@@ -533,6 +535,13 @@ public class InputPanelController : MonoBehaviour
             SetPromptImage("banana");
             GameData.InputMode = "banana";
             GameData.UserImage = null;
+        }
+
+        if (!wasAeroHockeyStarted && loadedTexture != null)
+        {
+            if (aiWarningText != null) HideUIElement(aiWarningText);
+            if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
+            if (backDuringGenerationButton != null) HideUIElement(backDuringGenerationButton.gameObject);
         }
 
         if (promptImage != null) ShowUIElement(promptImage);

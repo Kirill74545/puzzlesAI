@@ -141,12 +141,13 @@ public class PuzzleGenerator : MonoBehaviour
         if (coinsEarned > 0)
         {
             int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-            PlayerPrefs.SetInt("TotalCoins", currentCoins + coinsEarned);
+            int newTotalCoins = currentCoins + coinsEarned; 
+            PlayerPrefs.SetInt("TotalCoins", newTotalCoins);
             PlayerPrefs.Save();
 
             var coinManager = Object.FindFirstObjectByType<CoinManager>();
-            coinManager?.UpdateDisplay();
-            Debug.Log($"Начислено монет: {coinsEarned}. Всего монет: {currentCoins + coinsEarned}");
+            coinManager?.UpdateDisplay(newTotalCoins); 
+            Debug.Log($"Начислено монет: {coinsEarned}. Всего монет: {newTotalCoins}");
         }
 
         puzzle?.OnPuzzleCompleted();
@@ -284,6 +285,7 @@ public class PuzzleGenerator : MonoBehaviour
                 dragHandler.targetRow = row;
                 dragHandler.targetCol = col;
                 dragHandler.scrollRectContent = puzzlePiecesParent;
+                dragHandler.isCorrectlyPlaced = false;
             }
 
             // Рассчитываем позицию в ScrollRect (сетка слева направо, сверху вниз)

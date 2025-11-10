@@ -32,6 +32,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
     public bool isCorrectlyPlaced = false;
     private bool wasPlacedInDropZone = false;
     private Vector2 dropZonePositionWhenPlaced;
+    private DropZone dropZone;
 
     public Transform scrollRectContent;
 
@@ -49,6 +50,12 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
         // Гарантируем, что начальная Z-координата равна 0
         ResetZPosition();
+    }
+
+    public bool IsCorrectlyPlaced()
+    {
+        Vector2Int currentCell = dropZone.GetCellAtWorldPosition(transform.position, dropZone.gridSize);
+        return currentCell.x == targetCol && currentCell.y == targetRow;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -319,7 +326,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.puzzlePickupSFX);
     }
 
-    private void PlayCorrectSound()
+    public void PlayCorrectSound()
     {
         AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.puzzleCorrectSFX);
     }
@@ -356,7 +363,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         rectTransform.localScale = originalLocalScale;
     }
 
-    private void PlayBounceAndShineEffect()
+    public void PlayBounceAndShineEffect()
     {
         if (pieceImage == null || rectTransform == null) return;
 

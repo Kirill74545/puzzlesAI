@@ -15,6 +15,11 @@ public class DropZone : MonoBehaviour
             uiCamera = canvas.worldCamera;
         else
             Debug.LogError("DropZone не находится внутри Canvas!");
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        Canvas.ForceUpdateCanvases();
+
+        Debug.Log($"DropZone инициализирован: {rectTransform.rect.width}x{rectTransform.rect.height}, gridSize: {gridSize}");
     }
 
     public bool IsFullyInside(RectTransform dragged)
@@ -147,5 +152,19 @@ public class DropZone : MonoBehaviour
         );
 
         return clampedCenter;
+    }
+
+    public Vector2 GetCorrectCellPosition(int row, int col)
+    {
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+
+        float cellWidth = rectTransform.rect.width / gridSize;
+        float cellHeight = rectTransform.rect.height / gridSize;
+
+        float x = -(rectTransform.rect.width / 2f) + (col * cellWidth) + (cellWidth / 2f);
+        float y = (rectTransform.rect.height / 2f) - (row * cellHeight) - (cellHeight / 2f);
+
+        return new Vector2(x, y);
     }
 }
