@@ -236,69 +236,31 @@ public class ProgressPopupUI : MonoBehaviour, ICloseable
 
     private void SetupBackgroundItem(GameObject item, BackgroundData data)
     {
-        Image previewImage = item.GetComponentInChildren<Image>();
-        TMP_Text requirementText = item.GetComponentInChildren<TMP_Text>();
-        Button actionButton = item.GetComponentInChildren<Button>();
-        Image checkmark = item.transform.Find("Checkmark")?.GetComponent<Image>();
-
-        if (previewImage != null && data.previewSprite != null)
-            previewImage.sprite = data.previewSprite;
-
-        string reqText = "";
-        if (data.requiredLevel > 1) reqText += $"{data.requiredLevel} lvl";
-        if (data.requiredCoins > 0)
+        BackgroundItemUI itemUI = item.GetComponent<BackgroundItemUI>();
+        if (itemUI == null)
         {
-            if (!string.IsNullOrEmpty(reqText)) reqText += ", ";
-            reqText += $"{data.requiredCoins} coin";
+            itemUI = item.AddComponent<BackgroundItemUI>();
         }
-        requirementText.text = reqText;
 
         bool isCurrent = GetCurrentBackgroundId() == data.id;
         bool isPurchased = data.isPurchased;
+        bool canAfford = CanPurchase(data); // Вычисляем результат проверки
 
-        if (checkmark != null)
-            checkmark.gameObject.SetActive(isCurrent);
-
-        // Анимация наведения на кнопку
-        if (actionButton != null)
+        System.Action onClick = null;
+        if (!isPurchased)
         {
-            var buttonRectTransform = actionButton.GetComponent<RectTransform>();
-            actionButton.onClick.RemoveAllListeners();
-
-            if (!isPurchased)
-            {
-                actionButton.interactable = CanPurchase(data);
-                actionButton.onClick.AddListener(() => PurchaseBackground(data));
-
-                // Наведение на кнопку "Купить"
-                EventTrigger trigger = actionButton.GetComponent<EventTrigger>();
-                if (trigger == null) trigger = actionButton.gameObject.AddComponent<EventTrigger>();
-
-                EventTrigger.Entry entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-                entryEnter.callback.AddListener((data) => {
-                    buttonRectTransform.DOScale(itemScaleAmount, itemScaleDuration);
-                });
-
-                EventTrigger.Entry entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-                entryExit.callback.AddListener((data) => {
-                    buttonRectTransform.DOScale(1f, itemReturnDuration);
-                });
-
-                trigger.triggers.Add(entryEnter);
-                trigger.triggers.Add(entryExit);
-
-                actionButton.GetComponentInChildren<TMP_Text>().text = "Купить";
-            }
-            else
-            {
-                actionButton.interactable = !isCurrent;
-                actionButton.onClick.AddListener(() => SetActiveBackground(data));
-                actionButton.GetComponentInChildren<TMP_Text>().text = isCurrent ? "Текущий" : "Выбрать";
-            }
+            onClick = () => PurchaseBackground(data);
         }
+        else
+        {
+            onClick = () => SetActiveBackground(data);
+        }
+
+        // Передаём результат проверки
+        itemUI.Setup(data, isCurrent, isPurchased, canAfford, onClick);
     }
 
-    private bool CanPurchase(BackgroundData data)
+    public bool CanPurchase(BackgroundData data)
     {
         int currentLevel = playerLevelSystem.GetCurrentLevel();
         int totalCoins = PlayerPrefs.GetInt("TotalCoins", 0);

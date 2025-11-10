@@ -296,7 +296,7 @@ public class InputPanelController : MonoBehaviour
         // Скрыть предупреждение и кнопку аэрохоккея
         if (aiWarningText != null) HideUIElement(aiWarningText);
         if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
-        if (backDuringGenerationButton != null) ShowUIElement(backDuringGenerationButton.gameObject);
+        if (backDuringGenerationButton != null) HideUIElement(backDuringGenerationButton.gameObject);
 
         // Запуск мини-игры аэрохоккея
         if (miniGame != null)

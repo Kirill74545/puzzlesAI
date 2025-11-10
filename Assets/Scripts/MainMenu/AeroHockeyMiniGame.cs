@@ -275,12 +275,16 @@ public class AeroHockeyMiniGame : MonoBehaviour, IPointerDownHandler, IDragHandl
 
         puckVelocity = randomDirection * Random.Range(3f, 6f);
 
-        // Устанавливаем клюшки в начальные позиции
+        // Устанавливаем ИИ клюшку в начальную позицию
         float offset = ArenaHalfSize.x * 0.75f;
-        playerPaddle.anchoredPosition = new Vector2(-offset, 0);
         aiPaddle.anchoredPosition = new Vector2(offset, 0);
 
+        // Клюшка игрока остаётся на месте, не сбрасываем её позицию
+        // playerPaddle.anchoredPosition = new Vector2(-offset, 0); 
+
+        // Обновляем targetPaddlePosition, чтобы клюшка не прыгала при следующем движении
         targetPaddlePosition = playerPaddle.anchoredPosition;
+
         lastHitTime = Time.time;
 
         // Сбрасываем предыдущие позиции

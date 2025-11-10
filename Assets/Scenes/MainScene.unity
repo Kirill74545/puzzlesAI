@@ -288,7 +288,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 420.51, y: 400}
+  m_AnchoredPosition: {x: 384.4, y: 400}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &40115822
@@ -313,8 +313,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
+  m_sharedMaterial: {fileID: 2140474, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -338,13 +338,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 2
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -4158,6 +4158,7 @@ GameObject:
   - component: {fileID: 1045616774}
   - component: {fileID: 1045616776}
   - component: {fileID: 1045616773}
+  - component: {fileID: 1045616777}
   m_Layer: 5
   m_Name: ButtonPrev
   m_TagString: Untagged
@@ -4291,6 +4292,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1045616777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045616770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7751aba7f954f4408bbb874687708b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonBounceEffect
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
+  scaleDown: 0.8
 --- !u!1 &1068385986
 GameObject:
   m_ObjectHideFlags: 0
@@ -6544,6 +6561,7 @@ GameObject:
   - component: {fileID: 1616249480}
   - component: {fileID: 1616249482}
   - component: {fileID: 1616249479}
+  - component: {fileID: 1616249483}
   m_Layer: 5
   m_Name: ButtonNext
   m_TagString: Untagged
@@ -6677,6 +6695,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1616249483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616249476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7751aba7f954f4408bbb874687708b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonBounceEffect
+  animationDuration: 0.25
+  easeIn: 26
+  easeOut: 27
+  scaleDown: 0.8
 --- !u!1 &1622312250
 GameObject:
   m_ObjectHideFlags: 0
@@ -7870,8 +7904,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -14.075012, y: 32}
-  m_SizeDelta: {x: -173.48, y: -471.82}
+  m_AnchoredPosition: {x: 4.98999, y: 32}
+  m_SizeDelta: {x: -48.22, y: -471.82}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2076752126
 MonoBehaviour:
@@ -7893,7 +7927,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 331.2, y: 293.1}
+  m_CellSize: {x: 381.7, y: 293.1}
   m_Spacing: {x: 25.5, y: 85.6}
   m_Constraint: 1
   m_ConstraintCount: 2
