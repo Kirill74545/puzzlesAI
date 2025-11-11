@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System.Collections.Generic;
@@ -7,166 +7,256 @@ using TMPro;
 
 public class HintManager : MonoBehaviour
 {
-    [Header("Ссылки")]
-    public Image hintImage;           // Изображение подсказки (транспарентное)
-    public Button hintButton;         // Кнопка подсказки (показать изображение)
-    public Button autoPlaceButton;    // Кнопка подсказки (автоматическое размещение)
-    public DropZone dropZone;         // Дропзона
+    [Header("РЎСЃС‹Р»РєРё")]
+    public Image hintImage;           // РР·РѕР±СЂР°Р¶РµРЅРёРµ РїРѕРґСЃРєР°Р·РєРё (С‚СЂР°РЅСЃРїР°СЂРµРЅС‚РЅРѕРµ)
+    public Button hintButton;         // РљРЅРѕРїРєР° РїРѕРґСЃРєР°Р·РєРё (РїРѕРєР°Р·Р°С‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ)
+    public Button autoPlaceButton;    // РљРЅРѕРїРєР° РїРѕРґСЃРєР°Р·РєРё (Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРµ СЂР°Р·РјРµС‰РµРЅРёРµ)
+    public DropZone dropZone;         // Р”СЂРѕРїР·РѕРЅР°
 
-    [Header("UI Элементы")]
-    public TMP_Text imageHintCountText; // Текст для отображения количества подсказок-изображений
-    public TMP_Text autoPlaceHintCountText; // Текст для отображения количества авто-подсказок
-    public Button shopButton;         // Кнопка магазина
-    public GameObject shopPanel;      // Панель магазина (активируется кнопкой)
+    [Header("UI Р­Р»РµРјРµРЅС‚С‹")]
+    public TMP_Text imageHintCountText; // РўРµРєСЃС‚ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° РїРѕРґСЃРєР°Р·РѕРє-РёР·РѕР±СЂР°Р¶РµРЅРёР№
+    public TMP_Text autoPlaceHintCountText; // РўРµРєСЃС‚ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° Р°РІС‚Рѕ-РїРѕРґСЃРєР°Р·РѕРє
+    public Button shopButton;         // РљРЅРѕРїРєР° РјР°РіР°Р·РёРЅР°
+    public GameObject shopPanel;      // РџР°РЅРµР»СЊ РјР°РіР°Р·РёРЅР° (Р°РєС‚РёРІРёСЂСѓРµС‚СЃСЏ РєРЅРѕРїРєРѕР№)
 
-    [Header("Настройки подсказки изображения")]
-    public float hintDuration = 10f;  // Длительность показа подсказки в секундах
-    public float fadeDuration = 0.5f; // Время анимации появления/исчезновения
-    public float hintTransparency = 0.4f; // Прозрачность подсказки
+    [Header("РќР°СЃС‚СЂРѕР№РєРё РїРѕРґСЃРєР°Р·РєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ")]
+    public float hintDuration = 10f;  // Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРѕРєР°Р·Р° РїРѕРґСЃРєР°Р·РєРё РІ СЃРµРєСѓРЅРґР°С…
+    public float fadeDuration = 0.5f; // Р’СЂРµРјСЏ Р°РЅРёРјР°С†РёРё РїРѕСЏРІР»РµРЅРёСЏ/РёСЃС‡РµР·РЅРѕРІРµРЅРёСЏ
+    public float hintTransparency = 0.4f; // РџСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РїРѕРґСЃРєР°Р·РєРё
 
-    [Header("Настройки подсказки автоматического размещения")]
-    public int maxAutoPlaceHints = 5; // Максимальное количество подсказок автоматического размещения
+    [Header("РќР°СЃС‚СЂРѕР№РєРё РїРѕРґСЃРєР°Р·РєРё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ")]
+    public int maxAutoPlaceHints = 5; // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґСЃРєР°Р·РѕРє Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ
 
-    [Header("Цены в магазине")]
-    public int imageHintCost = 15;    // Стоимость одной подсказки-изображения
-    public int autoPlaceHintCost = 5; // Стоимость одной авто-подсказки
+    [Header("РљРЅРѕРїРєРё РјР°РіР°Р·РёРЅР° (РёР·РѕР±СЂР°Р¶РµРЅРёСЏ)")]
+    public Button imageHintX1;
+    public Button imageHintX3;
+    public Button imageHintX5;
 
-    private int availableHints = 3;           // Количество доступных подсказок изображения
-    private int availableAutoPlaceHints = 5;  // Количество доступных подсказок автоматического размещения
+    [Header("РљРЅРѕРїРєРё РјР°РіР°Р·РёРЅР° (Р°РІС‚Рѕ-РїРѕРґСЃРєР°Р·РєРё)")]
+    public Button autoHintX1;
+    public Button autoHintX3;
+    public Button autoHintX5;
 
+    [Header("Р¦РµРЅС‹ РІ РјР°РіР°Р·РёРЅРµ")]
+    public int imageHintPriceX1 = 15;
+    public int imageHintPriceX3 = 45;
+    public int imageHintPriceX5 = 75;
+
+    public int autoPlaceHintPriceX1 = 5;
+    public int autoPlaceHintPriceX3 = 15;
+    public int autoPlaceHintPriceX5 = 25;
+
+    private int availableHints = 3;           // РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+    private int availableAutoPlaceHints = 5;  // РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ
+
+    // Р”РѕР±Р°РІР»РµРЅРЅС‹Рµ РїРѕР»СЏ РґР»СЏ Р°РЅРёРјР°С†РёР№
+    private CanvasGroup shopCanvasGroup;
+    private Vector3 shopOriginalLocalPosition;
+    private const float slideDuration = 0.3f; // Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ Р°РЅРёРјР°С†РёРё РїРѕСЏРІР»РµРЅРёСЏ/РёСЃС‡РµР·РЅРѕРІРµРЅРёСЏ РїР°РЅРµР»Рё
 
     void Start()
     {
-        // Инициализация UI подсказок
-        if (imageHintCountText != null) imageHintCountText.text = availableHints.ToString();
-        if (autoPlaceHintCountText != null) autoPlaceHintCountText.text = availableAutoPlaceHints.ToString();
+        // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ UI РїРѕРґСЃРєР°Р·РѕРє
+        UpdateHintCountTexts();
+        shopPanel.SetActive(true); // Р’Р°Р¶РЅРѕ: СЃРЅР°С‡Р°Р»Р° Р°РєС‚РёРІРёСЂРѕРІР°С‚СЊ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ RectTransform Рё CanvasGroup
+        shopCanvasGroup = shopPanel.GetComponent<CanvasGroup>();
+        if (shopCanvasGroup == null) shopCanvasGroup = shopPanel.AddComponent<CanvasGroup>();
 
-        // Скрытие панели магазина при старте
-        if (shopPanel != null) shopPanel.SetActive(false);
+        RectTransform shopRT = shopPanel.GetComponent<RectTransform>();
+        shopOriginalLocalPosition = shopRT.anchoredPosition3D;
 
-        // Настройка кнопок
+        // РЎРєСЂС‹С‚СЊ РїР°РЅРµР»СЊ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+        shopPanel.SetActive(false);
+
+        // РќР°СЃС‚СЂРѕР№РєР° РѕСЃРЅРѕРІРЅС‹С… РєРЅРѕРїРѕРє
         if (hintButton != null) hintButton.onClick.AddListener(ShowHint);
         if (autoPlaceButton != null) autoPlaceButton.onClick.AddListener(UseAutoPlaceHint);
         if (shopButton != null) shopButton.onClick.AddListener(ToggleShopPanel);
 
-        // Загрузка сохранённых значений
-        availableHints = PlayerPrefs.GetInt("AvailableHints", 3);
-        availableAutoPlaceHints = PlayerPrefs.GetInt("AvailableAutoPlaceHints", maxAutoPlaceHints);
+        // РќР°СЃС‚СЂРѕР№РєР° РєРЅРѕРїРѕРє РјР°РіР°Р·РёРЅР°
+        SetupShopButtons();
 
-        // Обновление состояния кнопок и UI
+        // Р—Р°РіСЂСѓР·РєР° СЃРѕС…СЂР°РЅС‘РЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№
+        availableHints = PlayerPrefs.GetInt("AvailableHints", 3);
+        availableAutoPlaceHints = PlayerPrefs.GetInt("AvailableAutoPlaceHints", 5);
+
         UpdateHintButtonState();
         UpdateAutoPlaceButtonState();
         UpdateHintCountTexts();
     }
 
-    // Переключение видимости панели магазина
+    // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РІРёРґРёРјРѕСЃС‚Рё РїР°РЅРµР»Рё РјР°РіР°Р·РёРЅР°
     public void ToggleShopPanel()
     {
         if (shopPanel != null)
         {
             bool isActive = shopPanel.activeSelf;
-            shopPanel.SetActive(!isActive);
-
-            // Обновляем UI магазина при открытии (например, актуальное количество монет)
-            if (!isActive) UpdateShopUI();
+            if (isActive)
+            {
+                AnimateShopPanelOut();
+            }
+            else
+            {
+                shopPanel.SetActive(true);
+                AnimateShopPanelIn();
+                UpdateShopUI();
+            }
         }
     }
 
-    // Обновление текстовых полей с количеством подсказок
+    private void AnimateShopPanelIn()
+    {
+        RectTransform shopRT = shopPanel.GetComponent<RectTransform>();
+        // РЎРјРµС‰Р°РµРј РїР°РЅРµР»СЊ Р·Р° РїСЂРµРґРµР»С‹ СЌРєСЂР°РЅР° (РЅР°РїСЂРёРјРµСЂ, РІРЅРёР·)
+        shopRT.anchoredPosition3D = new Vector3(shopOriginalLocalPosition.x, shopOriginalLocalPosition.y - 200, shopOriginalLocalPosition.z);
+
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ РІ 0
+        shopCanvasGroup.alpha = 0f;
+        shopCanvasGroup.interactable = false;
+        shopCanvasGroup.blocksRaycasts = false;
+
+        // РђРЅРёРјР°С†РёСЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ Рё РїРѕСЏРІР»РµРЅРёСЏ
+        shopRT.DOAnchorPos3D(shopOriginalLocalPosition, slideDuration).SetEase(Ease.OutBack);
+        shopCanvasGroup.DOFade(1f, slideDuration).OnComplete(() =>
+        {
+            shopCanvasGroup.interactable = true;
+            shopCanvasGroup.blocksRaycasts = true;
+        });
+    }
+
+    private void AnimateShopPanelOut()
+    {
+        RectTransform shopRT = shopPanel.GetComponent<RectTransform>();
+
+        // РђРЅРёРјР°С†РёСЏ РёСЃС‡РµР·РЅРѕРІРµРЅРёСЏ Рё СЃРєСЂС‹С‚РёСЏ
+        shopRT.DOAnchorPos3D(new Vector3(shopOriginalLocalPosition.x, shopOriginalLocalPosition.y - 200, shopOriginalLocalPosition.z), slideDuration).SetEase(Ease.InBack);
+        shopCanvasGroup.DOFade(0f, slideDuration).OnComplete(() =>
+        {
+            shopPanel.SetActive(false);
+        });
+    }
+
+    private void SetupShopButtons()
+    {
+        // РљРЅРѕРїРєРё РґР»СЏ РїРѕРґСЃРєР°Р·РѕРє-РёР·РѕР±СЂР°Р¶РµРЅРёР№
+        if (imageHintX1 != null) imageHintX1.onClick.AddListener(() => BuyImageHints(1, imageHintPriceX1));
+        if (imageHintX3 != null) imageHintX3.onClick.AddListener(() => BuyImageHints(3, imageHintPriceX3));
+        if (imageHintX5 != null) imageHintX5.onClick.AddListener(() => BuyImageHints(5, imageHintPriceX5));
+
+        // РљРЅРѕРїРєРё РґР»СЏ Р°РІС‚Рѕ-РїРѕРґСЃРєР°Р·РѕРє
+        if (autoHintX1 != null) autoHintX1.onClick.AddListener(() => BuyAutoPlaceHints(1, autoPlaceHintPriceX1));
+        if (autoHintX3 != null) autoHintX3.onClick.AddListener(() => BuyAutoPlaceHints(3, autoPlaceHintPriceX3));
+        if (autoHintX5 != null) autoHintX5.onClick.AddListener(() => BuyAutoPlaceHints(5, autoPlaceHintPriceX5));
+
+        // РџРѕРґРїРёСЃС‹РІР°РµРјСЃСЏ РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєРЅРѕРїРѕРє РїСЂРё РёР·РјРµРЅРµРЅРёРё РјРѕРЅРµС‚
+        // РњРѕР¶РЅРѕ РІС‹Р·РІР°С‚СЊ РѕР±РЅРѕРІР»РµРЅРёРµ РїСЂРё СЃС‚Р°СЂС‚Рµ
+        UpdateAllButtonStates();
+    }
+
+    // РћР±РЅРѕРІР»РµРЅРёРµ С‚РµРєСЃС‚РѕРІС‹С… РїРѕР»РµР№ СЃ РєРѕР»РёС‡РµСЃС‚РІРѕРј РїРѕРґСЃРєР°Р·РѕРє
     void UpdateHintCountTexts()
     {
         if (imageHintCountText != null) imageHintCountText.text = availableHints.ToString();
         if (autoPlaceHintCountText != null) autoPlaceHintCountText.text = availableAutoPlaceHints.ToString();
     }
 
-    // Метод для обновления UI магазина (вызывать при открытии панели)
+    public void BuyImageHints(int count, int price)
+    {
+        if (!CheckAndDeductCoins(price)) return;
+
+        availableHints += count;
+        PlayerPrefs.SetInt("AvailableHints", availableHints);
+        PlayerPrefs.Save();
+
+        UpdateHintCountTexts();
+        UpdateHintButtonState();
+        UpdateAllButtonStates(); // РћР±РЅРѕРІРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє РјР°РіР°Р·РёРЅР°
+        Debug.Log($"РљСѓРїР»РµРЅРѕ {count} РїРѕРґСЃРєР°Р·РѕРє-РёР·РѕР±СЂР°Р¶РµРЅРёР№ Р·Р° {price} РјРѕРЅРµС‚");
+    }
+
+    // РџРѕРєСѓРїРєР° Р°РІС‚Рѕ-РїРѕРґСЃРєР°Р·РѕРє
+    public void BuyAutoPlaceHints(int count, int price)
+    {
+        if (!CheckAndDeductCoins(price)) return;
+
+        availableAutoPlaceHints += count;
+        PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);
+        PlayerPrefs.Save();
+
+        UpdateHintCountTexts();
+        UpdateAutoPlaceButtonState();
+        UpdateAllButtonStates(); // РћР±РЅРѕРІРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє РјР°РіР°Р·РёРЅР°
+        Debug.Log($"РљСѓРїР»РµРЅРѕ {count} Р°РІС‚Рѕ-РїРѕРґСЃРєР°Р·РѕРє Р·Р° {price} РјРѕРЅРµС‚");
+    }
+
+    private bool CheckAndDeductCoins(int price)
+    {
+        int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
+
+        if (currentCoins < price)
+        {
+            Debug.Log("РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјРѕРЅРµС‚ РґР»СЏ РїРѕРєСѓРїРєРё!");
+            // РњРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РІРёР·СѓР°Р»СЊРЅРѕРµ СѓРІРµРґРѕРјР»РµРЅРёРµ
+            return false;
+        }
+
+        currentCoins -= price;
+        PlayerPrefs.SetInt("TotalCoins", currentCoins);
+        PlayerPrefs.Save();
+
+        // РћР±РЅРѕРІР»СЏРµРј РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РјРѕРЅРµС‚
+        CoinManager coinManager = Object.FindFirstObjectByType<CoinManager>();
+        if (coinManager != null) coinManager.UpdateDisplay(currentCoins);
+
+        return true;
+    }
+
+    // РњРµС‚РѕРґ РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ UI РјР°РіР°Р·РёРЅР° (РІС‹Р·С‹РІР°С‚СЊ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РїР°РЅРµР»Рё)
     void UpdateShopUI()
     {
-        // Здесь можно обновить отображение цен или количество монет в магазине
-        // Например: shopCoinText.text = PlayerPrefs.GetInt("TotalCoins", 0).ToString();
+        UpdateAllButtonStates();
     }
 
-    // Покупка подсказок-изображений
-    public void BuyImageHints(int count)
+    private void UpdateAllButtonStates()
     {
-        int totalCost = count * imageHintCost;
-        int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
+        UpdateShopButtonPriceAndState(imageHintX1, imageHintPriceX1);
+        UpdateShopButtonPriceAndState(imageHintX3, imageHintPriceX3);
+        UpdateShopButtonPriceAndState(imageHintX5, imageHintPriceX5);
 
-        if (currentCoins >= totalCost)
-        {
-            // Списание монет
-            currentCoins -= totalCost;
-            PlayerPrefs.SetInt("TotalCoins", currentCoins);
-
-            // Добавление подсказок
-            availableHints += count;
-            PlayerPrefs.SetInt("AvailableHints", availableHints);
-
-            PlayerPrefs.Save();
-
-            // Обновление UI
-            UpdateHintCountTexts();
-            UpdateHintButtonState();
-
-            // Обновление отображения монет (через CoinManager)
-            CoinManager coinManager = Object.FindFirstObjectByType<CoinManager>();
-            if (coinManager != null) coinManager.UpdateDisplay(currentCoins);
-
-            Debug.Log($"Куплено {count} подсказок-изображений за {totalCost} монет");
-        }
-        else
-        {
-            Debug.Log("Недостаточно монет!");
-            // Здесь можно показать предупреждение в UI
-        }
+        UpdateShopButtonPriceAndState(autoHintX1, autoPlaceHintPriceX1);
+        UpdateShopButtonPriceAndState(autoHintX3, autoPlaceHintPriceX3);
+        UpdateShopButtonPriceAndState(autoHintX5, autoPlaceHintPriceX5);
     }
 
-    // Покупка авто-подсказок
-    public void BuyAutoPlaceHints(int count)
+    private void UpdateShopButtonPriceAndState(Button button, int price)
     {
-        int totalCost = count * autoPlaceHintCost;
+        if (button == null) return;
+
+        // РџРѕРёСЃРє TMP_Text РІРЅСѓС‚СЂРё РєРЅРѕРїРєРё
+        TMP_Text priceText = button.GetComponentInChildren<TMP_Text>();
+        if (priceText != null)
+        {
+            // РР·РІР»РµРєР°РµРј С‚РµРєСѓС‰РёР№ С‚РµРєСЃС‚ (РЅР°РїСЂРёРјРµСЂ "x1") Рё РґРѕР±Р°РІР»СЏРµРј С†РµРЅСѓ
+            string currentText = priceText.text.Split('\n')[0];
+            priceText.text = $"{currentText}\n{price}";
+        }
+
+        // РћР±РЅРѕРІР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРєРё (СЃРµСЂР°СЏ/Р°РєС‚РёРІРЅР°СЏ)
         int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-
-        if (currentCoins >= totalCost)
-        {
-            // Списание монет
-            currentCoins -= totalCost;
-            PlayerPrefs.SetInt("TotalCoins", currentCoins);
-
-            // Добавление подсказок
-            availableAutoPlaceHints += count;
-            PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);
-
-            PlayerPrefs.Save();
-
-            // Обновление UI
-            UpdateHintCountTexts();
-            UpdateAutoPlaceButtonState();
-
-            // Обновление отображения монет
-            CoinManager coinManager = Object.FindFirstObjectByType<CoinManager>();
-            if (coinManager != null) coinManager.UpdateDisplay(currentCoins);
-
-            Debug.Log($"Куплено {count} авто-подсказок за {totalCost} монет");
-        }
-        else
-        {
-            Debug.Log("Недостаточно монет!");
-            // Здесь можно показать предупреждение в UI
-        }
+        button.interactable = currentCoins >= price;
     }
 
     void ShowHint()
     {
-        // Проверка, есть ли доступные подсказки
+        // РџСЂРѕРІРµСЂРєР°, РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРїРЅС‹Рµ РїРѕРґСЃРєР°Р·РєРё
         if (availableHints <= 0)
         {
-            Debug.Log("Нет доступных подсказок изображения. Купите подсказки за монеты.");
-            // Здесь можно показать окно покупки подсказок
+            Debug.Log("РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. РљСѓРїРёС‚Рµ РїРѕРґСЃРєР°Р·РєРё Р·Р° РјРѕРЅРµС‚С‹.");
+            // Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ РѕРєРЅРѕ РїРѕРєСѓРїРєРё РїРѕРґСЃРєР°Р·РѕРє
             return;
         }
 
-        // Уменьшаем количество доступных подсказок
+        // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє
         availableHints--;
         PlayerPrefs.SetInt("AvailableHints", availableHints);
         PlayerPrefs.Save();
@@ -175,7 +265,7 @@ public class HintManager : MonoBehaviour
 
         if (hintImage != null && GameData.UserImage != null)
         {
-            // Создаём спрайт из GameData.UserImage
+            // РЎРѕР·РґР°С‘Рј СЃРїСЂР°Р№С‚ РёР· GameData.UserImage
             Sprite hintSprite = Sprite.Create(
                 GameData.UserImage,
                 new Rect(0, 0, GameData.UserImage.width, GameData.UserImage.height),
@@ -185,31 +275,31 @@ public class HintManager : MonoBehaviour
 
             hintImage.sprite = hintSprite;
 
-            // Устанавливаем прозрачность
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ
             Color color = hintImage.color;
             color.a = hintTransparency;
             hintImage.color = color;
 
-            // Устанавливаем размер и позицию под дропзоной
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЂР°Р·РјРµСЂ Рё РїРѕР·РёС†РёСЋ РїРѕРґ РґСЂРѕРїР·РѕРЅРѕР№
             RectTransform hintRT = hintImage.GetComponent<RectTransform>();
             RectTransform dropZoneRT = dropZone.GetComponent<RectTransform>();
 
-            hintRT.SetParent(dropZoneRT.parent, false); // Перемещаем в тот же родитель
+            hintRT.SetParent(dropZoneRT.parent, false); // РџРµСЂРµРјРµС‰Р°РµРј РІ С‚РѕС‚ Р¶Рµ СЂРѕРґРёС‚РµР»СЊ
             hintRT.anchorMin = dropZoneRT.anchorMin;
             hintRT.anchorMax = dropZoneRT.anchorMax;
             hintRT.anchoredPosition = dropZoneRT.anchoredPosition;
             hintRT.sizeDelta = dropZoneRT.sizeDelta;
 
-            // Показываем подсказку с анимацией
+            // РџРѕРєР°Р·С‹РІР°РµРј РїРѕРґСЃРєР°Р·РєСѓ СЃ Р°РЅРёРјР°С†РёРµР№
             hintImage.gameObject.SetActive(true);
             hintImage.DOFade(hintTransparency, fadeDuration);
 
-            // Запускаем таймер для скрытия подсказки
+            // Р—Р°РїСѓСЃРєР°РµРј С‚Р°Р№РјРµСЂ РґР»СЏ СЃРєСЂС‹С‚РёСЏ РїРѕРґСЃРєР°Р·РєРё
             StartCoroutine(HideHintAfterDelay());
         }
         else
         {
-            Debug.LogWarning("Нет доступного изображения для подсказки (GameData.UserImage == null).");
+            Debug.LogWarning("РќРµС‚ РґРѕСЃС‚СѓРїРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РґР»СЏ РїРѕРґСЃРєР°Р·РєРё (GameData.UserImage == null).");
         }
     }
 
@@ -227,15 +317,15 @@ public class HintManager : MonoBehaviour
 
     void UseAutoPlaceHint()
     {
-        // Проверка, есть ли доступные подсказки автоматического размещения
+        // РџСЂРѕРІРµСЂРєР°, РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРїРЅС‹Рµ РїРѕРґСЃРєР°Р·РєРё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ
         if (availableAutoPlaceHints <= 0)
         {
-            Debug.Log("Нет доступных подсказок автоматического размещения. Купите подсказки за монеты.");
-            // Здесь можно показать окно покупки подсказок
+            Debug.Log("РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ. РљСѓРїРёС‚Рµ РїРѕРґСЃРєР°Р·РєРё Р·Р° РјРѕРЅРµС‚С‹.");
+            // Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ РѕРєРЅРѕ РїРѕРєСѓРїРєРё РїРѕРґСЃРєР°Р·РѕРє
             return;
         }
 
-        // Уменьшаем количество доступных подсказок автоматического размещения
+        // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕРґСЃРєР°Р·РѕРє Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°Р·РјРµС‰РµРЅРёСЏ
         availableAutoPlaceHints--;
         PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);
         PlayerPrefs.Save();
@@ -243,22 +333,22 @@ public class HintManager : MonoBehaviour
         UpdateHintCountTexts();
         UpdateAutoPlaceButtonState();
 
-        // Находим неправильно размещенные детали
+        // РќР°С…РѕРґРёРј РЅРµРїСЂР°РІРёР»СЊРЅРѕ СЂР°Р·РјРµС‰РµРЅРЅС‹Рµ РґРµС‚Р°Р»Рё
         List<PuzzlePieceDragHandler> misplacedPieces = FindMisplacedPieces();
 
         if (misplacedPieces.Count > 0)
         {
-            // Выбираем случайную деталь
+            // Р’С‹Р±РёСЂР°РµРј СЃР»СѓС‡Р°Р№РЅСѓСЋ РґРµС‚Р°Р»СЊ
             System.Random rng = new System.Random();
             PuzzlePieceDragHandler selectedPiece = misplacedPieces[rng.Next(misplacedPieces.Count)];
 
-            // Перемещаем деталь в правильное место
+            // РџРµСЂРµРјРµС‰Р°РµРј РґРµС‚Р°Р»СЊ РІ РїСЂР°РІРёР»СЊРЅРѕРµ РјРµСЃС‚Рѕ
             MovePieceToCorrectPosition(selectedPiece);
         }
         else
         {
-            Debug.Log("Все детали уже на своих местах!");
-            // Восстанавливаем подсказку, если нет неправильно размещённых деталей
+            Debug.Log("Р’СЃРµ РґРµС‚Р°Р»Рё СѓР¶Рµ РЅР° СЃРІРѕРёС… РјРµСЃС‚Р°С…!");
+            // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕРґСЃРєР°Р·РєСѓ, РµСЃР»Рё РЅРµС‚ РЅРµРїСЂР°РІРёР»СЊРЅРѕ СЂР°Р·РјРµС‰С‘РЅРЅС‹С… РґРµС‚Р°Р»РµР№
             availableAutoPlaceHints++;
             PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);
             PlayerPrefs.Save();
@@ -286,7 +376,7 @@ public class HintManager : MonoBehaviour
     {
         if (dropZone == null)
         {
-            Debug.LogError("DropZone не назначен в HintManager!");
+            Debug.LogError("DropZone РЅРµ РЅР°Р·РЅР°С‡РµРЅ РІ HintManager!");
             return;
         }
 
@@ -294,31 +384,31 @@ public class HintManager : MonoBehaviour
 
         if (dropZoneRT == null)
         {
-            Debug.LogError("DropZone RectTransform не найден!");
+            Debug.LogError("DropZone RectTransform РЅРµ РЅР°Р№РґРµРЅ!");
             return;
         }
 
-        // Убедимся, что дропзона имеет правильные размеры
+        // РЈР±РµРґРёРјСЃСЏ, С‡С‚Рѕ РґСЂРѕРїР·РѕРЅР° РёРјРµРµС‚ РїСЂР°РІРёР»СЊРЅС‹Рµ СЂР°Р·РјРµСЂС‹
         LayoutRebuilder.ForceRebuildLayoutImmediate(dropZoneRT);
         Canvas.ForceUpdateCanvases();
 
-        // Получаем размеры дропзоны
+        // РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂС‹ РґСЂРѕРїР·РѕРЅС‹
         float dropZoneWidth = dropZoneRT.rect.width;
         float dropZoneHeight = dropZoneRT.rect.height;
 
-        // Проверка, чтобы избежать деления на ноль
+        // РџСЂРѕРІРµСЂРєР°, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РґРµР»РµРЅРёСЏ РЅР° РЅРѕР»СЊ
         if (dropZone.gridSize <= 0)
         {
             Debug.LogError("DropZone gridSize <= 0!");
             return;
         }
 
-        // Вычисляем размер ячейки
+        // Р’С‹С‡РёСЃР»СЏРµРј СЂР°Р·РјРµСЂ СЏС‡РµР№РєРё
         float cellWidth = dropZoneWidth / dropZone.gridSize;
         float cellHeight = dropZoneHeight / dropZone.gridSize;
 
-        Debug.Log($"DropZone размеры: {dropZoneWidth}x{dropZoneHeight}");
-        Debug.Log($"Размер ячейки: {cellWidth}x{cellHeight}");
+        Debug.Log($"DropZone СЂР°Р·РјРµСЂС‹: {dropZoneWidth}x{dropZoneHeight}");
+        Debug.Log($"Р Р°Р·РјРµСЂ СЏС‡РµР№РєРё: {cellWidth}x{cellHeight}");
         Debug.Log($"gridSize: {dropZone.gridSize}, targetRow: {piece.targetRow}, targetCol: {piece.targetCol}");
 
         float x = -(dropZoneWidth / 2f) + (piece.targetCol * cellWidth) + (cellWidth / 2f);
@@ -326,57 +416,57 @@ public class HintManager : MonoBehaviour
 
         Vector2 targetPosition = dropZone.GetCorrectCellPosition(piece.targetRow, piece.targetCol);
 
-        Debug.Log($"Рассчитанная позиция: ({x}, {y}) для ячейки [{piece.targetRow}, {piece.targetCol}]");
+        Debug.Log($"Р Р°СЃСЃС‡РёС‚Р°РЅРЅР°СЏ РїРѕР·РёС†РёСЏ: ({x}, {y}) РґР»СЏ СЏС‡РµР№РєРё [{piece.targetRow}, {piece.targetCol}]");
 
         RectTransform pieceRT = piece.GetComponent<RectTransform>();
 
-        // Сохраняем оригинальные настройки
+        // РЎРѕС…СЂР°РЅСЏРµРј РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё
         Vector2 originalAnchorMin = pieceRT.anchorMin;
         Vector2 originalAnchorMax = pieceRT.anchorMax;
         Vector2 originalPivot = pieceRT.pivot;
 
-        // Устанавливаем anchor и pivot в центр для точного позиционирования
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј anchor Рё pivot РІ С†РµРЅС‚СЂ РґР»СЏ С‚РѕС‡РЅРѕРіРѕ РїРѕР·РёС†РёРѕРЅРёСЂРѕРІР°РЅРёСЏ
         pieceRT.anchorMin = new Vector2(0.5f, 0.5f);
         pieceRT.anchorMax = new Vector2(0.5f, 0.5f);
         pieceRT.pivot = new Vector2(0.5f, 0.5f);
 
-        // Если деталь находится в ScrollRect, извлекаем её оттуда
+        // Р•СЃР»Рё РґРµС‚Р°Р»СЊ РЅР°С…РѕРґРёС‚СЃСЏ РІ ScrollRect, РёР·РІР»РµРєР°РµРј РµС‘ РѕС‚С‚СѓРґР°
         if (piece.scrollRectContent != null && pieceRT.parent == piece.scrollRectContent)
         {
-            Debug.Log("Деталь находится в ScrollRect, перемещаем в дропзону");
+            Debug.Log("Р”РµС‚Р°Р»СЊ РЅР°С…РѕРґРёС‚СЃСЏ РІ ScrollRect, РїРµСЂРµРјРµС‰Р°РµРј РІ РґСЂРѕРїР·РѕРЅСѓ");
             pieceRT.SetParent(dropZoneRT, false);
         }
         else
         {
-            Debug.Log("Деталь уже не в ScrollRect, устанавливаем позицию");
-            // Убедимся, что деталь находится в дропзоне
+            Debug.Log("Р”РµС‚Р°Р»СЊ СѓР¶Рµ РЅРµ РІ ScrollRect, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР·РёС†РёСЋ");
+            // РЈР±РµРґРёРјСЃСЏ, С‡С‚Рѕ РґРµС‚Р°Р»СЊ РЅР°С…РѕРґРёС‚СЃСЏ РІ РґСЂРѕРїР·РѕРЅРµ
             if (pieceRT.parent != dropZoneRT)
             {
                 pieceRT.SetParent(dropZoneRT, false);
             }
         }
 
-        // Устанавливаем правильный размер для ячейки в дропзоне
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїСЂР°РІРёР»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РґР»СЏ СЏС‡РµР№РєРё РІ РґСЂРѕРїР·РѕРЅРµ
         pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellWidth);
         pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellHeight);
 
-        // Устанавливаем позицию
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР·РёС†РёСЋ
         pieceRT.anchoredPosition = targetPosition;
 
-        // Сбрасываем локальную позицию Z
+        // РЎР±СЂР°СЃС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ Z
         Vector3 localPos = pieceRT.localPosition;
         localPos.z = 0;
         pieceRT.localPosition = localPos;
 
-        // Визуальная проверка положения
+        // Р’РёР·СѓР°Р»СЊРЅР°СЏ РїСЂРѕРІРµСЂРєР° РїРѕР»РѕР¶РµРЅРёСЏ
         Vector3 screenPos = RectTransformUtility.WorldToScreenPoint(null, pieceRT.position);
-        Debug.Log($"Позиция на экране: {screenPos}");
+        Debug.Log($"РџРѕР·РёС†РёСЏ РЅР° СЌРєСЂР°РЅРµ: {screenPos}");
 
-        // Обновляем состояние пазла
+        // РћР±РЅРѕРІР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїР°Р·Р»Р°
         piece.isCorrectlyPlaced = true;
-        piece.enabled = false; // отключаем перетаскивание
+        piece.enabled = false; // РѕС‚РєР»СЋС‡Р°РµРј РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРµ
 
-        // Обновляем CanvasGroup
+        // РћР±РЅРѕРІР»СЏРµРј CanvasGroup
         CanvasGroup canvasGroup = piece.GetComponent<CanvasGroup>();
         if (canvasGroup != null)
         {
@@ -389,18 +479,18 @@ public class HintManager : MonoBehaviour
             if (graphic != null) graphic.raycastTarget = false;
         }
 
-        // Воспроизводим эффекты
+        // Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёРј СЌС„С„РµРєС‚С‹
         piece.PlayBounceAndShineEffect();
         piece.PlayCorrectSound();
 
-        // Регистрируем правильное размещение
-        PuzzleGenerator puzzleGen = FindObjectOfType<PuzzleGenerator>();
+        // Р РµРіРёСЃС‚СЂРёСЂСѓРµРј РїСЂР°РІРёР»СЊРЅРѕРµ СЂР°Р·РјРµС‰РµРЅРёРµ
+        PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
         if (puzzleGen != null)
         {
             puzzleGen.RegisterCorrectPlacement();
         }
 
-        Debug.Log($"Автоматически размещена деталь [{piece.targetRow},{piece.targetCol}] на позицию: {targetPosition}");
+        Debug.Log($"РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё СЂР°Р·РјРµС‰РµРЅР° РґРµС‚Р°Р»СЊ [{piece.targetRow},{piece.targetCol}] РЅР° РїРѕР·РёС†РёСЋ: {targetPosition}");
     }
 
     void UpdateHintButtonState()
@@ -417,72 +507,5 @@ public class HintManager : MonoBehaviour
         {
             autoPlaceButton.interactable = availableAutoPlaceHints > 0;
         }
-    }
-
-    // Метод для покупки подсказок изображения за монеты
-    public void PurchaseHintImage(int count, int costPerHint)
-    {
-        int totalCost = count * costPerHint;
-        int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-
-        if (currentCoins >= totalCost)
-        {
-            // Снимаем монеты
-            currentCoins -= totalCost;
-            PlayerPrefs.SetInt("TotalCoins", currentCoins);
-            PlayerPrefs.Save();
-
-            // Добавляем подсказки
-            availableHints += count;
-            PlayerPrefs.SetInt("AvailableHints", availableHints);
-            PlayerPrefs.Save();
-
-            UpdateHintButtonState();
-
-            Debug.Log($"Куплено {count} подсказок изображения за {totalCost} монет. Осталось монет: {currentCoins}, подсказок: {availableHints}");
-        }
-        else
-        {
-            Debug.Log("Недостаточно монет для покупки подсказок изображения.");
-        }
-    }
-
-    // Метод для покупки подсказок автоматического размещения за монеты
-    public void PurchaseAutoPlaceHint(int count)
-    {
-        int totalCost = count * autoPlaceHintCost;
-        int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-
-        if (currentCoins >= totalCost)
-        {
-            // Снимаем монеты
-            currentCoins -= totalCost;
-            PlayerPrefs.SetInt("TotalCoins", currentCoins);
-            PlayerPrefs.Save();
-
-            // Добавляем подсказки
-            availableAutoPlaceHints += count;
-            PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);
-            PlayerPrefs.Save();
-
-            UpdateAutoPlaceButtonState();
-
-            Debug.Log($"Куплено {count} подсказок автоматического размещения за {totalCost} монет. Осталось монет: {currentCoins}, подсказок: {availableAutoPlaceHints}");
-        }
-        else
-        {
-            Debug.Log("Недостаточно монет для покупки подсказок автоматического размещения.");
-        }
-    }
-
-    // Методы для получения текущего количества подсказок (для UI)
-    public int GetAvailableHintImageCount()
-    {
-        return availableHints;
-    }
-
-    public int GetAvailableAutoPlaceHintCount()
-    {
-        return availableAutoPlaceHints;
     }
 }
