@@ -14,6 +14,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip levelCompleteSFX;    // звук победы
     public AudioClip coinCollectSFX;      // звук сбора монет
 
+    [Header("Музыка")]
+    public AudioClip defaultMusic; // Трек по умолчанию
+    public AudioClip specialMusic; // Трек для фона ID 14
+
     [Header("Звуки магазина фонов")]
     public AudioClip backgroundPurchaseSFX; // Звук покупки фона
     public AudioClip backgroundSelectSFX;   // Звук выбора фона
@@ -46,6 +50,15 @@ public class AudioManager : MonoBehaviour
             musicSource = gameObject.AddComponent<AudioSource>();
             musicSource.playOnAwake = false;
             musicSource.loop = true;
+        }
+
+        if (defaultMusic != null)
+        {
+            musicSource.clip = defaultMusic;
+            if (musicOn)
+            {
+                musicSource.Play();
+            }
         }
 
         // Создаём отдельный источник для SFX (чтобы не мешать музыке)
@@ -138,5 +151,29 @@ public class AudioManager : MonoBehaviour
     {
         musicOn = PlayerPrefs.GetInt("MusicOn", 1) == 1;
         soundOn = PlayerPrefs.GetInt("SoundOn", 1) == 1;
+    }
+
+    public void SetSpecialMusic()
+    {
+        if (specialMusic != null && musicSource.clip != specialMusic)
+        {
+            musicSource.clip = specialMusic;
+            if (musicOn && !musicSource.isPlaying)
+            {
+                musicSource.Play();
+            }
+        }
+    }
+
+    public void SetDefaultMusic()
+    {
+        if (defaultMusic != null && musicSource.clip != defaultMusic)
+        {
+            musicSource.clip = defaultMusic;
+            if (musicOn && !musicSource.isPlaying)
+            {
+                musicSource.Play();
+            }
+        }
     }
 }

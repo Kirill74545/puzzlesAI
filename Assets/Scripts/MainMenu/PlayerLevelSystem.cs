@@ -44,7 +44,7 @@ public class PlayerLevelSystem : MonoBehaviour
         PlayerPrefs.Save(); 
     }
 
-    void LoadProgress()
+    public void LoadProgress()
     {
         currentScore = PlayerPrefs.GetInt(SCORE_KEY, 0);
         currentLevel = PlayerPrefs.GetInt(LEVEL_KEY, 1);

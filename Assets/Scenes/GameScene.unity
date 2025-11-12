@@ -2771,7 +2771,6 @@ GameObject:
   - component: {fileID: 843551290}
   - component: {fileID: 843551291}
   - component: {fileID: 843551292}
-  - component: {fileID: 843551293}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2880,44 +2879,10 @@ MonoBehaviour:
   - {fileID: -3502936598957839027, guid: 9c8827bd22903354fa3d65472e2cbb1d, type: 3}
   - {fileID: -1872440133595829111, guid: 6733b1401cea31142af668370d91f7c0, type: 3}
   - {fileID: 7115932276215978911, guid: 59bdb5372d96f4e4aa2c349cb908f39c, type: 3}
+  - {fileID: -7367852755356962199, guid: 1b058c354c164374ab3b6b7f39bb049d, type: 3}
+  - {fileID: 7272749387832672760, guid: 3abff9765f6aaf74b9844322cfce946e, type: 3}
   fadeInDuration: 0.5
   fadeInEase: 7
---- !u!114 &843551293
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 843551286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b99d99bbda3a6a74088ef107779c34a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HintManager
-  hintImage: {fileID: 0}
-  hintButton: {fileID: 0}
-  autoPlaceButton: {fileID: 0}
-  dropZone: {fileID: 0}
-  imageHintCountText: {fileID: 0}
-  autoPlaceHintCountText: {fileID: 0}
-  shopButton: {fileID: 0}
-  shopPanel: {fileID: 0}
-  hintDuration: 30
-  fadeDuration: 0.5
-  hintTransparency: 0.4
-  maxAutoPlaceHints: 5
-  imageHintX1: {fileID: 0}
-  imageHintX3: {fileID: 0}
-  imageHintX5: {fileID: 0}
-  autoHintX1: {fileID: 0}
-  autoHintX3: {fileID: 0}
-  autoHintX5: {fileID: 0}
-  imageHintPriceX1: 5
-  imageHintPriceX3: 15
-  imageHintPriceX5: 25
-  autoPlaceHintPriceX1: 15
-  autoPlaceHintPriceX3: 45
-  autoPlaceHintPriceX5: 75
 --- !u!1 &892845952
 GameObject:
   m_ObjectHideFlags: 0

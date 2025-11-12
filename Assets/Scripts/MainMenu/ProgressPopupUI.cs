@@ -196,7 +196,7 @@ public class ProgressPopupUI : MonoBehaviour, ICloseable
                   });
     }
 
-    private void UpdateText()
+    public void UpdateText()
     {
         int currentLevel = playerLevelSystem.GetCurrentLevel();
         int progressInLevel = playerLevelSystem.GetCurrentLevelProgress();
@@ -307,6 +307,15 @@ public class ProgressPopupUI : MonoBehaviour, ICloseable
         PlayerPrefs.Save();
 
         UpdateSceneBackground(data.id);
+
+        if (data.id == 14)
+        {
+            AudioManager.Instance?.SetSpecialMusic();
+        }
+        else if (oldId == 14)
+        {
+            AudioManager.Instance?.SetDefaultMusic();
+        }
 
         // Анимация смены фона
         var item = activeBackgroundItems.Find(go => go.GetComponent<RectTransform>().GetComponentInChildren<Button>().onClick.GetPersistentEventCount() > 0);
