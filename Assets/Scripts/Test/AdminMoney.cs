@@ -9,11 +9,11 @@ public class AdminCoinGiver : MonoBehaviour
     public bool hideInBuild = true;
 
     [Header("UI элементы")]
-    public Button adminButton; 
+    public Button adminButton;
 
     [Header("Настройки наград")]
     public int coinsToAdd = 1000;
-    public int targetLevel = 15; 
+    public int targetLevel = 15;
 
     void Start()
     {
@@ -59,7 +59,7 @@ public class AdminCoinGiver : MonoBehaviour
 
     private void SetPlayerLevel(int level)
     {
-        PlayerLevelSystem levelSystem = Object.FindFirstObjectByType<PlayerLevelSystem>();
+        PlayerLevelSystem levelSystem = FindAnyObjectByType<PlayerLevelSystem>();
 
         // Рассчитываем количество очков, необходимых для достижения уровня
         int scoreRequired = GetScoreRequiredForLevel(level);
@@ -94,7 +94,7 @@ public class AdminCoinGiver : MonoBehaviour
 
     private void UpdateCoinsDisplay()
     {
-        var coinTexts = FindObjectsOfType<TMP_Text>();
+        var coinTexts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
         foreach (var text in coinTexts)
         {
             if (text.name.ToLower().Contains("coin") || text.name.ToLower().Contains("coins"))
@@ -106,7 +106,7 @@ public class AdminCoinGiver : MonoBehaviour
 
     private void UpdateLevelDisplay()
     {
-        var levelTexts = FindObjectsOfType<TMP_Text>();
+        var levelTexts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
         foreach (var text in levelTexts)
         {
             if (text.name.ToLower().Contains("level"))
@@ -115,14 +115,14 @@ public class AdminCoinGiver : MonoBehaviour
             }
         }
 
-        var progressPopup = FindObjectOfType<ProgressPopupUI>();
+        var progressPopup = FindAnyObjectByType<ProgressPopupUI>();
         if (progressPopup != null)
         {
             progressPopup.UpdateText(); // Обновляем текст уровня и опыта
         }
 
         // Обновляем систему уровней, если она существует
-        var levelSystem = FindObjectOfType<PlayerLevelSystem>();
+        var levelSystem = FindAnyObjectByType<PlayerLevelSystem>();
         if (levelSystem != null)
         {
             levelSystem.LoadProgress(); // Перезагружаем прогресс
