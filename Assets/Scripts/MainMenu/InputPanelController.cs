@@ -5,6 +5,7 @@ using System.Collections;
 using DG.Tweening;
 using UnityEngine.Networking;
 using UnityEngine.InputSystem;
+using System.Threading;
 
 public class InputPanelController : MonoBehaviour
 {
@@ -83,30 +84,31 @@ public class InputPanelController : MonoBehaviour
 
     private AppState currentState = AppState.Start;
 
+    private CancellationTokenSource aiGenerationCts;
+    private CancellationTokenSource webImageCts;
+    private CancellationTokenSource userImageCts;
+
     void Start()
     {
         panelRectTransform = inputPanel.GetComponent<RectTransform>();
         panelCanvasGroup = inputPanel.GetComponent<CanvasGroup>() ?? inputPanel.AddComponent<CanvasGroup>();
-
         if (additionalImage != null)
         {
             imageRectTransform = additionalImage.GetComponent<RectTransform>();
             imageCanvasGroup = additionalImage.GetComponent<CanvasGroup>() ?? additionalImage.AddComponent<CanvasGroup>();
         }
-
         if (additionalImage_ != null)
         {
             imageRectTransform_ = additionalImage_.GetComponent<RectTransform>();
             imageCanvasGroup_ = additionalImage_.GetComponent<CanvasGroup>() ?? additionalImage_.AddComponent<CanvasGroup>();
         }
-
         aiGenerator = Object.FindFirstObjectByType<Gen_image_AI>();
         if (aiGenerator == null)
         {
             Debug.LogWarning("Gen_image_AI не найден на сцене. Генерация изображений недоступна.");
         }
 
-        // Скрыть всё изначально
+
         inputPanel.SetActive(false);
         if (additionalImage != null) additionalImage.SetActive(false);
         if (additionalImage_ != null) additionalImage_.SetActive(false);
@@ -135,34 +137,24 @@ public class InputPanelController : MonoBehaviour
         // Подписка на события
         if (startButton != null)
             startButton.onClick.AddListener(() => { AnimateButtonPress(startButton); OnStartButtonClicked(); });
-
         if (randomButton != null)
             randomButton.onClick.AddListener(() => { AnimateButtonPress(randomButton); OnRandomButtonClicked(); });
-
         if (aiGenerateButton != null)
             aiGenerateButton.onClick.AddListener(() => { AnimateButtonPress(aiGenerateButton); OnAIGenerateClicked(); });
-
         if (searchWebImageButton != null)
             searchWebImageButton.onClick.AddListener(() => { AnimateButtonPress(searchWebImageButton); OnSearchWebImageButtonClicked(); });
-
         if (userImageButton != null)
             userImageButton.onClick.AddListener(() => { AnimateButtonPress(userImageButton); OnUserImageButtonClicked(); });
-
         if (confirmButton2 != null)
             confirmButton2.onClick.AddListener(() => { AnimateButtonPress(confirmButton2); OnConfirmButton2Clicked(); });
-
         if (classikButton != null)
             classikButton.onClick.AddListener(() => { AnimateButtonPress(classikButton); OnChoiceSelected("classik"); });
-
         if (randomChoiceButton != null)
             randomChoiceButton.onClick.AddListener(() => { AnimateButtonPress(randomChoiceButton); OnChoiceSelected("random"); });
-
         if (backToInputButton != null)
             backToInputButton.onClick.AddListener(OnBackToInputButtonClicked);
-
         if (backDuringGenerationButton != null)
             backDuringGenerationButton.onClick.AddListener(OnBackDuringGenerationButtonClicked);
-
         if (level1Button != null)
             level1Button.onClick.AddListener(() => { AnimateButtonPress(level1Button); OnLevelSelected("level1"); });
         if (level2Button != null)
@@ -171,34 +163,28 @@ public class InputPanelController : MonoBehaviour
             level3Button.onClick.AddListener(() => { AnimateButtonPress(level3Button); OnLevelSelected("level3"); });
         if (level4Button != null)
             level4Button.onClick.AddListener(() => { AnimateButtonPress(level4Button); OnLevelSelected("level4"); });
-
         if (aeroHockeyButton != null)
             aeroHockeyButton.onClick.AddListener(() => { AnimateButtonPress(aeroHockeyButton); OnAeroHockeyButtonClicked(); });
-
         if (inputField != null)
             inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
-
         currentState = AppState.Start;
     }
 
     void Update()
     {
         bool backPressed = false;
-
-        #if ENABLE_INPUT_SYSTEM
-
+    #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             backPressed = true;
         }
-        #else
+    #else
         // Старая система ввода
         if (Input.GetKeyDown(KeyCode.Escape))
         {
         backPressed = true;
         }
-        #endif
-
+    #endif
         if (backPressed)
         {
             HandleBackButton();
@@ -213,27 +199,22 @@ public class InputPanelController : MonoBehaviour
                 Debug.Log("Системная кнопка 'Назад' нажата во время выбора галереи");
                 ReturnToInputSelection();
                 break;
-
             case AppState.AIGeneration:
                 Debug.Log("Системная кнопка 'Назад' нажата во время генерации ИИ");
                 OnBackDuringGenerationButtonClicked();
                 break;
-
             case AppState.ImageConfirmed:
                 Debug.Log("Системная кнопка 'Назад' нажата при подтверждении изображения");
                 OnBackToInputButtonClicked();
                 break;
-
             case AppState.ChoiceSelection:
                 Debug.Log("Системная кнопка 'Назад' нажата при выборе метода");
                 ReturnFromChoiceToImage();
                 break;
-
             case AppState.LevelSelection:
                 Debug.Log("Системная кнопка 'Назад' нажата при выборе уровня");
                 ReturnFromLevelToChoice();
                 break;
-
             case AppState.InputSelection:
                 Debug.Log("Системная кнопка 'Назад' нажата - возврат к стартовому экрану");
                 ReturnToStart();
@@ -375,6 +356,16 @@ public class InputPanelController : MonoBehaviour
             return;
         }
 
+        // Отмена предыдущ генерации, если была
+        if (aiGenerationCts != null)
+        {
+            aiGenerationCts.Cancel();
+            aiGenerationCts.Dispose();
+        }
+
+        // Создаём новый токен для текущей генерации
+        aiGenerationCts = new CancellationTokenSource();
+
         savedInput = inputField.text.Trim();
         HideInputElements();
         currentState = AppState.AIGeneration;
@@ -383,14 +374,13 @@ public class InputPanelController : MonoBehaviour
         if (aiWarningText != null) ShowUIElement(aiWarningText);
         if (aeroHockeyButton != null) ShowUIElement(aeroHockeyButton.gameObject);
         if (backDuringGenerationButton != null) ShowUIElement(backDuringGenerationButton.gameObject);
-
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(true);
             StartCoroutine(RotateLoadingIndicator());
         }
 
-        StartCoroutine(ProcessSubmission());
+        StartCoroutine(ProcessSubmission(aiGenerationCts.Token));
     }
 
     void OnAeroHockeyButtonClicked()
@@ -413,10 +403,19 @@ public class InputPanelController : MonoBehaviour
 
     void OnUserImageButtonClicked()
     {
+        // Отмена генерации
+        if (userImageCts != null)
+        {
+            userImageCts.Cancel();
+            userImageCts.Dispose();
+        }
+        // Создаём новый токен для текущей загрузки
+        userImageCts = new CancellationTokenSource();
+
         HideInputElements();
         currentState = AppState.GallerySelection;
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+        #if UNITY_ANDROID && !UNITY_EDITOR
         NativeGallery.GetImageFromGallery((path) =>
         {
             if (path != null)
@@ -427,28 +426,38 @@ public class InputPanelController : MonoBehaviour
                     userTexture = texture;
                     savedInput = "user image";
                     Debug.Log("Выбрано пользовательское изображение");
-
                     if (loadingIndicator != null)
                     {
                         loadingIndicator.SetActive(true);
                         StartCoroutine(RotateLoadingIndicator());
                     }
-
-                    StartCoroutine(ProcessUserImageSubmission());
+                    // --- 🔥 ПЕРЕДАЁМ ТОКЕН В КОРУТИНУ ---
+                    StartCoroutine(ProcessUserImageSubmission(userImageCts.Token));
+                    // --- /ПЕРЕДАЁМ ТОКЕН ---
                 }
                 else
                 {
+                    // --- 🔥 ОЧИСТКА ТОКЕНА ПРИ ОШИБКЕ ---
+                    userImageCts?.Cancel();
+                    userImageCts?.Dispose();
+                    userImageCts = null;
+                    // --- /ОЧИСТКА ---
                     Debug.LogError("Не удалось загрузить изображение");
                     ReturnToInputSelection();
                 }
             }
             else
             {
+                // --- 🔥 ОЧИСТКА ТОКЕНА ПРИ ОТМЕНЕ ---
+                userImageCts?.Cancel();
+                userImageCts?.Dispose();
+                userImageCts = null;
+                // --- /ОЧИСТКА ---
                 Debug.Log("Выбор отменён");
                 ReturnToInputSelection();
             }
         }, "Выберите изображение", "image/*");
-#else
+        #else
         Debug.Log("Галерея недоступна в редакторе");
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
@@ -459,13 +468,17 @@ public class InputPanelController : MonoBehaviour
             StartCoroutine(RotateLoadingIndicator());
         }
 
-        StartCoroutine(ProcessUserImageSubmission());
-#endif
+        StartCoroutine(ProcessUserImageSubmission(userImageCts.Token));
+        #endif
     }
 
     void OnBackToInputButtonClicked()
     {
         Debug.Log("Кнопка 'Вернуться' нажата. Сбрасываем изображение и возвращаемся к выбору ввода.");
+
+        aiGenerationCts?.Cancel();
+        webImageCts?.Cancel();
+        userImageCts?.Cancel();
 
         // Сбрасываем GameData, связанные с изображением
         GameData.InputMode = null;
@@ -488,6 +501,10 @@ public class InputPanelController : MonoBehaviour
     void OnBackDuringGenerationButtonClicked()
     {
         Debug.Log("Кнопка 'Вернуться во время генерации' нажата. Отменяем генерацию и возвращаемся к выбору ввода.");
+
+        aiGenerationCts?.Cancel();
+        webImageCts?.Cancel();
+        userImageCts?.Cancel();
 
         // Остановить аэрохоккей, если он был запущен
         if (miniGame != null && miniGame.isActive)
@@ -529,6 +546,14 @@ public class InputPanelController : MonoBehaviour
             return;
         }
 
+        if (webImageCts != null)
+        {
+            webImageCts.Cancel();
+            webImageCts.Dispose();
+        }
+        // Создаём новый токен для текущей загрузки
+        webImageCts = new CancellationTokenSource();
+
         HideInputElements();
         if (loadingIndicator != null)
         {
@@ -536,8 +561,8 @@ public class InputPanelController : MonoBehaviour
             isRotating = true;
             StartCoroutine(RotateLoadingIndicator());
         }
-
-        StartCoroutine(FetchImageFromOpenverse(query));
+        // Сначала ищем на Wikimedia, если не найдено - ищем на Openverse
+        StartCoroutine(FetchImageFromWikimedia(query, webImageCts.Token));
     }
 
     void HideInputElements()
@@ -551,7 +576,7 @@ public class InputPanelController : MonoBehaviour
         if (backToInputButton != null) HideUIElement(backToInputButton.gameObject);
     }
 
-    IEnumerator ProcessSubmission()
+    IEnumerator ProcessSubmission(CancellationToken token)
     {
         if (loadingIndicator != null)
         {
@@ -566,6 +591,11 @@ public class InputPanelController : MonoBehaviour
         {
             Debug.Log($"Генерация ИИ для: {savedInput}");
 
+            if (token.IsCancellationRequested)
+            {
+                Debug.Log("ProcessSubmission: Отменено перед вызовом GenerateImage.");
+                yield break; 
+            }
             yield return StartCoroutine(aiGenerator.GenerateImage(savedInput, (tex) => loadedTexture = tex));
         }
         else
@@ -576,7 +606,13 @@ public class InputPanelController : MonoBehaviour
             if (fallback != null) loadedTexture = fallback.texture;
         }
 
-        // Останавливаем аэрохоккей, если он был запущен (ДОБАВЛЕНО)
+        if (token.IsCancellationRequested)
+        {
+            Debug.Log("ProcessSubmission: Отменено пользователем после завершения генерации.");
+            yield break; 
+        }
+
+        // Останавливаем аэрохоккей, если он был запущен 
         if (miniGame != null && miniGame.isActive)
         {
             miniGame.StopMiniGame();
@@ -591,18 +627,25 @@ public class InputPanelController : MonoBehaviour
             isRotating = false;
         }
 
-        if (loadedTexture != null)
+        if (!token.IsCancellationRequested)
         {
-            GameData.InputMode = "user image";
-            GameData.UserImage = loadedTexture;
-            SetAIPromptImage(loadedTexture);
+            if (loadedTexture != null)
+            {
+                GameData.InputMode = "user image";
+                GameData.UserImage = loadedTexture;
+                SetAIPromptImage(loadedTexture);
+            }
+            else
+            {
+                Debug.LogError("Не удалось получить изображение.");
+                SetPromptImage("banana");
+                GameData.InputMode = "banana";
+                GameData.UserImage = null;
+            }
         }
         else
         {
-            Debug.LogError("Не удалось получить изображение.");
-            SetPromptImage("banana");
-            GameData.InputMode = "banana";
-            GameData.UserImage = null;
+            Debug.Log("ProcessSubmission: Установка изображения отменена.");
         }
 
         if (!wasAeroHockeyStarted)
@@ -611,17 +654,38 @@ public class InputPanelController : MonoBehaviour
             if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
             if (backDuringGenerationButton != null) HideUIElement(backDuringGenerationButton.gameObject);
         }
+        // Только устанавливаем состояние ImageConfirmed, если не отменено
+        if (!token.IsCancellationRequested)
+        {
+            currentState = AppState.ImageConfirmed;
 
-        currentState = AppState.ImageConfirmed;
-
-        if (promptImage != null) ShowUIElement(promptImage);
-        if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
-        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
+            if (promptImage != null) ShowUIElement(promptImage);
+            if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+            if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
+        }
     }
 
-    IEnumerator ProcessUserImageSubmission()
+    IEnumerator ProcessUserImageSubmission(CancellationToken token)
     {
+        if (token.IsCancellationRequested)
+        {
+            Debug.Log("ProcessUserImageSubmission: Отменено пользователем.");
+            // Очистка токена в этом случае
+            userImageCts?.Dispose();
+            userImageCts = null;
+            yield break; // Выходим из корутины
+        }
+
         yield return new WaitForSeconds(2f);
+
+        if (token.IsCancellationRequested)
+        {
+            Debug.Log("ProcessUserImageSubmission: Отменено пользователем после ожидания.");
+            // Очистка токена в этом случае
+            userImageCts?.Dispose();
+            userImageCts = null;
+            yield break; 
+        }
 
         if (miniGame != null && miniGame.isActive)
         {
@@ -634,43 +698,267 @@ public class InputPanelController : MonoBehaviour
             isRotating = false;
         }
 
-        GameData.InputMode = "user image";
-        GameData.UserImage = userTexture;
-        SetUserPromptImage();
+        if (!token.IsCancellationRequested)
+        {
+            GameData.InputMode = "user image";
+            GameData.UserImage = userTexture;
+            SetUserPromptImage();
+            currentState = AppState.ImageConfirmed;
+            if (promptImage != null) ShowUIElement(promptImage);
+            if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+            if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
+        }
+        else
+        {
+            Debug.Log("ProcessUserImageSubmission: Установка изображения отменена.");
+            // Очистка токена в этом случае
+            userImageCts?.Dispose();
+            userImageCts = null;
+        }
 
-        currentState = AppState.ImageConfirmed;
-
-        if (promptImage != null) ShowUIElement(promptImage);
-        if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
-        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
     }
 
-    IEnumerator FetchImageFromOpenverse(string query)
+    IEnumerator FetchImageFromWikimedia(string query, CancellationToken token)
+    {
+        string userAgent = "Unity3D/2025.1 (non-commercial use)";
+        // Кодируем только сам запрос
+        string encodedQuery = UnityWebRequest.EscapeURL(query);
+        string searchUrl = $"https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srsearch={encodedQuery}&srnamespace=6&srlimit=1&origin=*";
+        Debug.Log($"[Wikimedia] Поиск: {searchUrl}");
+
+        using (UnityWebRequest www = UnityWebRequest.Get(searchUrl))
+        {
+            www.SetRequestHeader("User-Agent", userAgent);
+            yield return www.SendWebRequest();
+
+            if (token.IsCancellationRequested)
+            {
+                Debug.Log("[Wikimedia] Поиск отменён пользователем.");
+                // Очистка токена в этом случае
+                webImageCts?.Dispose();
+                webImageCts = null;
+                yield break;
+            }
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"[Wikimedia] Ошибка поиска: {www.error}");
+                if (!token.IsCancellationRequested)
+                {
+                    StartCoroutine(FetchImageFromOpenverse(query, token)); 
+                }
+                yield break;
+            }
+            WikimediaSearchResponse searchResponse = null;
+            try
+            {
+                searchResponse = JsonUtility.FromJson<WikimediaSearchResponse>(www.downloadHandler.text);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Wikimedia] Ошибка парсинга: {e.Message}");
+                if (!token.IsCancellationRequested)
+                {
+                    StartCoroutine(FetchImageFromOpenverse(query, token)); 
+                }
+                yield break;
+            }
+
+            if (searchResponse?.query?.search == null || searchResponse.query.search.Length == 0)
+            {
+                Debug.LogWarning($"[Wikimedia] Нет результатов для '{query}'");
+
+                if (!token.IsCancellationRequested)
+                {
+                    StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                }
+                yield break;
+            }
+            string fileName = searchResponse.query.search[0].title;
+            Debug.Log($"[Wikimedia] Найден файл: {fileName}");
+            // Удаляем префикс "File:" если он есть
+            if (fileName.StartsWith("File:"))
+            {
+                fileName = fileName.Substring(5);
+            }
+            string encodedFileName = UnityWebRequest.EscapeURL(fileName);
+            // Добавляем префикс "File:" в параметр titles, но уже в URL
+            string imageInfoUrl = $"https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url|size&titles=File:{encodedFileName}&origin=*";
+
+            Debug.Log($"[Wikimedia] Запрос информации: {imageInfoUrl}");
+
+            using (UnityWebRequest imgInfoReq = UnityWebRequest.Get(imageInfoUrl))
+            {
+                imgInfoReq.SetRequestHeader("User-Agent", userAgent);
+                yield return imgInfoReq.SendWebRequest();
+
+                if (token.IsCancellationRequested)
+                {
+                    Debug.Log("[Wikimedia] Запрос информации отменён пользователем.");
+                    // Очистка токена в этом случае
+                    webImageCts?.Dispose();
+                    webImageCts = null;
+                    yield break;
+                }
+
+                if (imgInfoReq.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError($"[Wikimedia] Ошибка получения информации: {imgInfoReq.error}");
+                    Debug.Log($"[Wikimedia] Ответ сервера: {imgInfoReq.downloadHandler.text}");
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                    }
+                    yield break;
+                }
+
+                // Вместо использования предопределенных классов, проверим структуру ответа
+                string responseText = imgInfoReq.downloadHandler.text;
+                Debug.Log($"[Wikimedia] Полный ответ API: {responseText}");
+                // Ищем URL изображения в ответе с помощью простого поиска по JSON
+                int urlIndex = responseText.IndexOf("\"url\":\"");
+                if (urlIndex == -1)
+                {
+                    Debug.LogWarning($"[Wikimedia] Не найдено поле 'url' в ответе для файла {fileName}");
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                    }
+                    yield break;
+                }
+                int urlStart = urlIndex + 7; // длина "\"url\":\""
+                int urlEnd = responseText.IndexOf("\"", urlStart);
+                if (urlEnd == -1)
+                {
+                    Debug.LogWarning($"[Wikimedia] Некорректный формат URL в ответе для файла {fileName}");
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                    }
+                    yield break;
+                }
+                string escapedUrl = responseText.Substring(urlStart, urlEnd - urlStart);
+                string imageUrl = escapedUrl.Replace("\\/", "/");
+                Debug.Log($"[Wikimedia] Извлечен URL: {imageUrl}");
+
+                if (token.IsCancellationRequested)
+                {
+                    Debug.Log("[Wikimedia] Загрузка изображения отменена перед загрузкой.");
+                    // Очистка токена в этом случае
+                    webImageCts?.Dispose();
+                    webImageCts = null;
+                    yield break;
+                }
+
+                using (UnityWebRequest imgReq = UnityWebRequestTexture.GetTexture(imageUrl))
+                {
+                    imgReq.SetRequestHeader("User-Agent", userAgent);
+                    yield return imgReq.SendWebRequest();
+
+                    if (token.IsCancellationRequested)
+                    {
+                        Debug.Log("[Wikimedia] Загрузка изображения отменена во время загрузки.");
+                        // Очистка токена в этом случае
+                        webImageCts?.Dispose();
+                        webImageCts = null;
+                        yield break;
+                    }
+
+                    if (imgReq.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogError($"[Wikimedia] Ошибка загрузки изображения: {imgReq.error}");
+
+                        if (!token.IsCancellationRequested)
+                        {
+                            StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                        }
+                        yield break;
+                    }
+                    Texture2D tex = ((DownloadHandlerTexture)imgReq.downloadHandler).texture;
+                    if (tex != null && tex.width > 10 && tex.height > 10)
+                    {
+                        if (!token.IsCancellationRequested)
+                        {
+                            if (loadingIndicator != null)
+                            {
+                                loadingIndicator.SetActive(false);
+                                isRotating = false;
+                            }
+                            GameData.InputMode = "web image";
+                            GameData.UserImage = tex;
+                            SetAIPromptImage(tex);
+                            currentState = AppState.ImageConfirmed; // Устанавливаем состояние здесь
+                            if (promptImage != null) ShowUIElement(promptImage);
+                            if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+                            if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
+                            Debug.Log($"[Wikimedia] Успешно загружено изображение для '{query}'");
+                        }
+                        else
+                        {
+                            Debug.Log("[Wikimedia] Установка изображения отменена.");
+                        }
+
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[Wikimedia] Изображение слишком маленькое или повреждено: {tex?.width}x{tex?.height}");
+
+                        if (!token.IsCancellationRequested)
+                        {
+                            StartCoroutine(FetchImageFromOpenverse(query, token)); // Передаём токен
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    IEnumerator FetchImageFromOpenverse(string query, CancellationToken token)
     {
         string url = $"https://api.openverse.engineering/v1/images/?q={UnityWebRequest.EscapeURL(query)}&page_size=1&format=json";
+
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             yield return www.SendWebRequest();
 
-            if (www.result != UnityWebRequest.Result.Success)
+            if (token.IsCancellationRequested)
             {
-                Debug.LogError("Openverse ошибка: " + www.error);
-                OnImageFetchFailed();
+                Debug.Log("[Openverse] Поиск отменён пользователем.");
+                // Очистка токена в этом случае
+                webImageCts?.Dispose();
+                webImageCts = null;
                 yield break;
             }
 
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Openverse ошибка: " + www.error);
+                OnImageFetchFailed(token); // Передаём токен
+                yield break;
+            }
             var response = JsonUtility.FromJson<OpenverseResponse>(www.downloadHandler.text);
             if (response?.results == null || response.results.Length == 0)
             {
                 Debug.LogWarning("Изображения не найдены.");
-                OnImageFetchFailed();
+                OnImageFetchFailed(token); // Передаём токен
                 yield break;
             }
-
             string imageUrl = response.results[0].url;
             if (string.IsNullOrWhiteSpace(imageUrl))
             {
-                OnImageFetchFailed();
+                OnImageFetchFailed(token); // Передаём токен
+                yield break;
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                Debug.Log("[Openverse] Загрузка изображения отменена перед загрузкой.");
+                // Очистка токена в этом случае
+                webImageCts?.Dispose();
+                webImageCts = null;
                 yield break;
             }
 
@@ -678,39 +966,66 @@ public class InputPanelController : MonoBehaviour
             {
                 yield return imgRequest.SendWebRequest();
 
-                if (imgRequest.result != UnityWebRequest.Result.Success)
+                if (token.IsCancellationRequested)
                 {
-                    OnImageFetchFailed();
+                    Debug.Log("[Openverse] Загрузка изображения отменена во время загрузки.");
+                    // Очистка токена в этом случае
+                    webImageCts?.Dispose();
+                    webImageCts = null;
                     yield break;
                 }
 
+                if (imgRequest.result != UnityWebRequest.Result.Success)
+                {
+                    OnImageFetchFailed(token); // Передаём токен
+                    yield break;
+                }
                 Texture2D tex = ((DownloadHandlerTexture)imgRequest.downloadHandler).texture;
                 if (tex != null && tex.width > 10 && tex.height > 10)
                 {
-                    if (loadingIndicator != null)
+                    if (!token.IsCancellationRequested)
                     {
-                        loadingIndicator.SetActive(false);
-                        isRotating = false;
+                        if (loadingIndicator != null)
+                        {
+                            loadingIndicator.SetActive(false);
+                            isRotating = false;
+                        }
+                        GameData.InputMode = "web image";
+                        GameData.UserImage = tex;
+                        SetAIPromptImage(tex);
+                        currentState = AppState.ImageConfirmed; // Устанавливаем состояние здесь
+                        if (promptImage != null) ShowUIElement(promptImage);
+                        if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+                        if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
                     }
-
-                    GameData.InputMode = "web image";
-                    GameData.UserImage = tex;
-                    SetAIPromptImage(tex);
-
-                    if (promptImage != null) ShowUIElement(promptImage);
-                    if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
-                    if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
+                    else
+                    {
+                        Debug.Log("[Openverse] Установка изображения отменена.");
+                    }
                 }
                 else
                 {
-                    OnImageFetchFailed();
+                    OnImageFetchFailed(token); // Передаём токен
                 }
             }
         }
     }
 
-    void OnImageFetchFailed()
+    void OnImageFetchFailed(CancellationToken token)
     {
+
+        if (token.IsCancellationRequested)
+        {
+            Debug.Log("OnImageFetchFailed: Вызов отменён, игнорируем установку fallback.");
+            // Очистка токена в этом случае, если он относился к веб-загрузке
+            if (token == webImageCts?.Token)
+            {
+                webImageCts?.Dispose();
+                webImageCts = null;
+            }
+            return; 
+        }
+
         if (miniGame != null && miniGame.isActive)
         {
             miniGame.StopMiniGame();
@@ -727,7 +1042,6 @@ public class InputPanelController : MonoBehaviour
         GameData.UserImage = null;
 
         currentState = AppState.ImageConfirmed;
-
         if (promptImage != null) ShowUIElement(promptImage);
         if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
         if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
@@ -830,14 +1144,23 @@ public class InputPanelController : MonoBehaviour
             .SetId("loadingRotation");
 
         while (isRotating) yield return null;
-
         DOTween.Kill("loadingRotation");
         loadingIndicator.SetActive(false);
     }
 
-    // Методы для управления возвратами
     private void ReturnToInputSelection()
     {
+        aiGenerationCts?.Cancel();
+        webImageCts?.Cancel();
+        userImageCts?.Cancel();
+
+        aiGenerationCts?.Dispose();
+        webImageCts?.Dispose();
+        userImageCts?.Dispose();
+        aiGenerationCts = null;
+        webImageCts = null;
+        userImageCts = null;
+
         currentState = AppState.InputSelection;
 
         // Останавливаем вращение индикатора
@@ -994,13 +1317,22 @@ public class InputPanelController : MonoBehaviour
 
     private void ReturnToStart()
     {
-        currentState = AppState.Start;
+        aiGenerationCts?.Cancel();
+        webImageCts?.Cancel();
+        userImageCts?.Cancel();
 
+        aiGenerationCts?.Dispose();
+        webImageCts?.Dispose();
+        userImageCts?.Dispose();
+        aiGenerationCts = null;
+        webImageCts = null;
+        userImageCts = null;
+
+        currentState = AppState.Start;
         // Скрываем все элементы
         if (inputPanel != null) HideUIElement(inputPanel);
         if (additionalImage != null) HideUIElement(additionalImage);
         if (additionalImage_ != null) HideUIElement(additionalImage_);
-
         // Показываем стартовую кнопку
         if (startButton != null)
         {
@@ -1012,29 +1344,23 @@ public class InputPanelController : MonoBehaviour
     void ShowUIElement(GameObject go, float duration = 0.3f, float delay = 0f)
     {
         if (go == null) return;
-
         // Гарантируем, что объект активен перед анимацией
         go.SetActive(true);
-
         var rect = go.GetComponent<RectTransform>();
         var cg = go.GetComponent<CanvasGroup>();
-
         // Если CanvasGroup нет - создаем
         if (cg == null)
         {
             cg = go.AddComponent<CanvasGroup>();
         }
-
         // Сбрасываем состояние перед анимацией
         rect.localScale = Vector3.one;
         cg.alpha = 1f;
-
         // Если длительность 0 - просто показываем без анимации
         if (duration <= 0f)
         {
             return;
         }
-
         // Анимация появления
         rect.localScale = Vector3.zero;
         cg.alpha = 0f;
@@ -1058,4 +1384,52 @@ public class InputPanelController : MonoBehaviour
         var rect = button.GetComponent<RectTransform>();
         rect.DOScale(0.9f, 0.1f).OnComplete(() => rect.DOScale(1f, 0.1f).SetEase(Ease.OutBack));
     }
+}
+
+[System.Serializable]
+public class WikimediaSearchResponse
+{
+    public WikimediaSearchQuery query;
+}
+
+[System.Serializable]
+public class WikimediaSearchQuery
+{
+    public WikimediaSearchResult[] search;
+}
+
+[System.Serializable]
+public class WikimediaSearchResult
+{
+    public int ns;
+    public string title;
+    public string snippet;
+}
+
+[System.Serializable]
+public class WikimediaImageInfoResponse
+{
+    public WikimediaImageInfoPages query;
+}
+
+[System.Serializable]
+public class WikimediaImageInfoPages
+{
+    public WikimediaImageInfoPage[] pages;
+}
+
+[System.Serializable]
+public class WikimediaImageInfoPage
+{
+    public int pageid;
+    public string title;
+    public WikimediaImageInfoDetail[] imageinfo;
+}
+
+[System.Serializable]
+public class WikimediaImageInfoDetail
+{
+    public string url;
+    public int width;
+    public int height;
 }
