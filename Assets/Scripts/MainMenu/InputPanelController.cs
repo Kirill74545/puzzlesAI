@@ -634,6 +634,11 @@ public class InputPanelController : MonoBehaviour
                 GameData.InputMode = "user image";
                 GameData.UserImage = loadedTexture;
                 SetAIPromptImage(loadedTexture);
+
+                currentState = AppState.ImageConfirmed; 
+                if (promptImage != null) ShowUIElement(promptImage);
+                if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+               if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
             }
             else
             {
@@ -641,6 +646,8 @@ public class InputPanelController : MonoBehaviour
                 SetPromptImage("banana");
                 GameData.InputMode = "banana";
                 GameData.UserImage = null;
+                if (promptImage != null) ShowUIElement(promptImage);
+                if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
             }
         }
         else
@@ -653,15 +660,6 @@ public class InputPanelController : MonoBehaviour
             if (aiWarningText != null) HideUIElement(aiWarningText);
             if (aeroHockeyButton != null) HideUIElement(aeroHockeyButton.gameObject);
             if (backDuringGenerationButton != null) HideUIElement(backDuringGenerationButton.gameObject);
-        }
-        // Только устанавливаем состояние ImageConfirmed, если не отменено
-        if (!token.IsCancellationRequested)
-        {
-            currentState = AppState.ImageConfirmed;
-
-            if (promptImage != null) ShowUIElement(promptImage);
-            if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
-            if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
         }
     }
 
@@ -1041,9 +1039,9 @@ public class InputPanelController : MonoBehaviour
         GameData.InputMode = "banana";
         GameData.UserImage = null;
 
-        currentState = AppState.ImageConfirmed;
+        //currentState = AppState.ImageConfirmed;
         if (promptImage != null) ShowUIElement(promptImage);
-        if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
+        //if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
         if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
     }
 
