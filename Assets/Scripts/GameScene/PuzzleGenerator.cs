@@ -92,7 +92,6 @@ public class PuzzleGenerator : MonoBehaviour
         isTimerRunning = true;
         if (timerText != null)
         {
-            timerText.color = Color.black;
             timerText.transform.DOScale(1.2f, 0.2f)
                 .OnComplete(() => timerText.transform.DOScale(1f, 0.2f))
                 .SetEase(Ease.OutQuad);
