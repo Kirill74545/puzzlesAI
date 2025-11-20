@@ -124,7 +124,19 @@ public class PuzzleGenerator : MonoBehaviour
         PlayerPrefs.SetString("LastCompletedLevel", GameData.SelectedLevel);
         PlayerPrefs.Save();
 
-        PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime);
+        HintManager hintManager = Object.FindFirstObjectByType<HintManager>();
+
+        bool hintsUsed = false;
+        if (hintManager != null)
+        {
+            hintsUsed = hintManager.WereHintsUsedThisLevel();
+        }
+        else
+        {
+            Debug.LogWarning("HintManager не найден при завершении уровня. Предполагаем, что подсказки не использовались.");
+        }
+
+        PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime, hintsUsed);
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
 
         int coinsEarned = 0;

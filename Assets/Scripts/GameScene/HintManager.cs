@@ -54,6 +54,8 @@ public class HintManager : MonoBehaviour
     private Vector3 shopOriginalLocalPosition;
     private const float slideDuration = 0.3f; // Длительность анимации появления/исчезновения панели
 
+    private bool usedHintsThisLevel = false;
+
     void Start()
     {
         // Инициализация UI подсказок
@@ -83,6 +85,19 @@ public class HintManager : MonoBehaviour
         UpdateHintButtonState();
         UpdateAutoPlaceButtonState();
         UpdateHintCountTexts();
+
+        ResetHintsUsedFlag();
+    }
+
+    public void ResetHintsUsedFlag()
+    {
+        usedHintsThisLevel = false;
+        Debug.Log("[HintManager] Флаг использования подсказок сброшен.");
+    }
+
+    public bool WereHintsUsedThisLevel()
+    {
+        return usedHintsThisLevel;
     }
 
     // Переключение видимости панели магазина
@@ -256,6 +271,9 @@ public class HintManager : MonoBehaviour
             return;
         }
 
+        usedHintsThisLevel = true;
+        Debug.Log("[HintManager] Использована подсказка изображения.");
+
         // Уменьшаем количество доступных подсказок
         availableHints--;
         PlayerPrefs.SetInt("AvailableHints", availableHints);
@@ -324,6 +342,8 @@ public class HintManager : MonoBehaviour
             // Здесь можно показать окно покупки подсказок
             return;
         }
+
+        usedHintsThisLevel = true;
 
         // Уменьшаем количество доступных подсказок автоматического размещения
         availableAutoPlaceHints--;

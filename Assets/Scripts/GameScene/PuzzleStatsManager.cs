@@ -8,12 +8,14 @@ public class PuzzleLevelRecord
     public string levelName;
     public float completionTimeSeconds;
     public string completionDate; // ISO формат: "2025-10-25T14:30:00"
+    public bool usedHints; // Новое поле: использовались ли подсказки
 
-    public PuzzleLevelRecord(string levelName, float time)
+    public PuzzleLevelRecord(string levelName, float time, bool usedHints = false)
     {
         this.levelName = levelName;
         this.completionTimeSeconds = time;
         this.completionDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+        this.usedHints = usedHints;
     }
 }
 
@@ -50,16 +52,15 @@ public class PuzzleStatsManager : MonoBehaviour
         LoadStats();
     }
 
-    public void AddCompletedLevel(string levelName, float timeInSeconds)
+    public void AddCompletedLevel(string levelName, float timeInSeconds, bool usedHints = false)
     {
-        _records.Add(new PuzzleLevelRecord(levelName, timeInSeconds));
+        _records.Add(new PuzzleLevelRecord(levelName, timeInSeconds, usedHints));
         SaveStats();
-        Debug.Log($"[PuzzleStats] Уровень '{levelName}' завершён за {timeInSeconds:F2} сек. Добавлено в статистику.");
     }
 
     public List<PuzzleLevelRecord> GetAllRecords()
     {
-        return new List<PuzzleLevelRecord>(_records); 
+        return new List<PuzzleLevelRecord>(_records);
     }
 
     public int GetTotalCompletedLevels()
@@ -108,7 +109,27 @@ public class PuzzleStatsManager : MonoBehaviour
 
         foreach (var record in _records)
         {
-            if (record.levelName == levelName)
+            if (record.levelName == levelName && !record.usedHints)
+            {
+                if (record.completionTimeSeconds < best)
+                {
+                    best = record.completionTimeSeconds;
+                    found = true;
+                }
+            }
+        }
+
+        return found ? best : -1f;
+    }
+
+    public float GetBestTimeForLevelWithoutHints(string levelName)
+    {
+        float best = float.MaxValue;
+        bool found = false;
+
+        foreach (var record in _records) 
+        {
+            if (record.levelName == levelName && !record.usedHints) 
             {
                 if (record.completionTimeSeconds < best)
                 {
