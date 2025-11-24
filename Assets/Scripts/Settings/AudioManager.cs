@@ -23,6 +23,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip backgroundSelectSFX;   // Звук выбора фона
     public AudioClip backgroundErrorSFX;    // Звук ошибки (не хватает монет/уровня)
 
+    [Header("Звуки подсказок")]
+    public AudioClip hintPurchaseSuccessSFX; // Успешная покупка подсказки
+    public AudioClip hintPurchaseFailSFX;    // Недостаточно монет
+
     [Header("Настройки")]
     public bool musicOn = true;
     public bool soundOn = true;

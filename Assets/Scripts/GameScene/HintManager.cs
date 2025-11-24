@@ -177,7 +177,13 @@ public class HintManager : MonoBehaviour
 
     public void BuyImageHints(int count, int price)
     {
-        if (!CheckAndDeductCoins(price)) return;
+        if (!CheckAndDeductCoins(price))
+        {
+            AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.hintPurchaseFailSFX);
+            return;
+        }
+
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.hintPurchaseSuccessSFX);
 
         availableHints += count;
         PlayerPrefs.SetInt("AvailableHints", availableHints);
@@ -192,7 +198,12 @@ public class HintManager : MonoBehaviour
     // Покупка авто-подсказок
     public void BuyAutoPlaceHints(int count, int price)
     {
-        if (!CheckAndDeductCoins(price)) return;
+        if (!CheckAndDeductCoins(price))
+        {
+            AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.hintPurchaseFailSFX);
+            return;
+        }
+        AudioManager.Instance?.PlayOneShotSFX(AudioManager.Instance.hintPurchaseSuccessSFX);
 
         availableAutoPlaceHints += count;
         PlayerPrefs.SetInt("AvailableAutoPlaceHints", availableAutoPlaceHints);

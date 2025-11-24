@@ -8582,6 +8582,14 @@ PrefabInstance:
       propertyPath: backgroundSelectSFX
       value: 
       objectReference: {fileID: 8300000, guid: a9002a5f5427ead4c998ed2d76dd6c89, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: hintPurchaseFailSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 39d2815f39bb12947ac940bf64a27123, type: 3}
+    - target: {fileID: 4960527701902800522, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
+      propertyPath: hintPurchaseSuccessSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: a9002a5f5427ead4c998ed2d76dd6c89, type: 3}
     - target: {fileID: 8006418259864126485, guid: adf0e3c6980362c4bb3f158a5c084b26, type: 3}
       propertyPath: m_Name
       value: AudioManager
