@@ -36,6 +36,11 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public Transform scrollRectContent;
 
+    public bool isTriangulationPiece = false;
+    public int triangleIndex = -1;
+    public Vector2 targetPosition = Vector2.zero;
+    public float placementTolerance = 20f;
+
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -179,7 +184,6 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
         if (dropZone != null)
         {
-            // Получаем позицию отпускания в локальных координатах DropZone
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 dropZone.rectTransform,
                 eventData.position,
@@ -191,10 +195,17 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
                     isInsideDropZone = true;
                     dropPosition = dropPosInDropZone;
 
-                    // Проверяем, правильная ли ячейка
-                    Vector3 worldPoint = uiCamera.ScreenToWorldPoint(eventData.position);
-                    Vector2Int currentCell = dropZone.GetCellAtWorldPosition(worldPoint, dropZone.gridSize);
-                    isCorrectPlacement = (currentCell.x == targetCol && currentCell.y == targetRow);
+                    if (isTriangulationPiece)
+                    {
+                        Debug.Log($"Треугольный пазл {triangleIndex} прикреплен к позиции {targetPosition}");
+                    }
+                    else
+                    {
+                        // Для классических пазлов проверяем ячейку
+                        Vector3 worldPoint = uiCamera.ScreenToWorldPoint(eventData.position);
+                        Vector2Int currentCell = dropZone.GetCellAtWorldPosition(worldPoint, dropZone.gridSize);
+                        isCorrectPlacement = (currentCell.x == targetCol && currentCell.y == targetRow);
+                    }
                 }
             }
         }
@@ -224,45 +235,73 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
 
         if (isInsideDropZone && dropZone != null)
         {
-            // Остаёмся в DropZone
+            // 1. Сначала родим пазл к дропзоне и установим ему правильный размер
             rectTransform.SetParent(dropZone.transform, false);
             rectTransform.localScale = Vector3.one;
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
 
+            // 2. Ставим пазл туда, куда игрок его отпустил
+            rectTransform.anchoredPosition = dropPosition;
+
+            // 3. ТЕПЕРЬ ПРОВЕРЯЕМ: Правильно ли он стоит?
+            isCorrectPlacement = false;
+            if (isTriangulationPiece)
+            {
+                // Сравниваем текущую позицию САМОГО ПАЗЛА с его целевой позицией
+                float distance = Vector2.Distance(rectTransform.anchoredPosition, targetPosition);
+                isCorrectPlacement = distance <= placementTolerance;
+            }
+            else
+            {
+                // Логика для классических пазлов остается без изменений
+                Vector3 worldPoint = uiCamera.ScreenToWorldPoint(eventData.position);
+                Vector2Int currentCell = dropZone.GetCellAtWorldPosition(worldPoint, dropZone.gridSize);
+                isCorrectPlacement = (currentCell.x == targetCol && currentCell.y == targetRow);
+            }
+
             if (isCorrectPlacement)
             {
-                // Приклеиваем точно
-                float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
-                float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
-                Vector2 perfectPosition = new Vector2(
-                    dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
-                    dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
-                );
-                rectTransform.anchoredPosition = perfectPosition;
-                rectTransform.SetAsFirstSibling();
+                // 4. Если правильно - "приклеиваем" его к идеальной позиции
+                if (isTriangulationPiece)
+                {
+                    rectTransform.anchoredPosition = targetPosition;
+                }
+                else
+                {
+                    // Логика для классики
+                    float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
+                    float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
+                    Vector2 perfectPosition = new Vector2(
+                        dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
+                        dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
+                    );
+                    rectTransform.anchoredPosition = perfectPosition;
+                }
 
+                // 5. Стандартные действия для правильного размещения
+                rectTransform.SetAsFirstSibling();
                 isCorrectlyPlaced = true;
-                this.enabled = false; // больше нельзя тащить
+                this.enabled = false;
 
                 PlayBounceAndShineEffect();
                 PlayCorrectSound();
 
-                // Отключаем raycast
                 if (canvasGroup != null)
                     canvasGroup.blocksRaycasts = false;
                 else
                     GetComponent<Graphic>().raycastTarget = false;
 
-                Debug.Log($"Пазл [{targetRow},{targetCol}] приклеен!");
+                Debug.Log(isTriangulationPiece
+                    ? $"Треугольный пазл {triangleIndex} приклеен!"
+                    : $"Пазл [{targetRow},{targetCol}] приклеен!");
 
                 PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
                 puzzleGen?.RegisterCorrectPlacement();
             }
             else
             {
-
-                rectTransform.anchoredPosition = dropPosition;
+                // Если не правильно - просто оставляем его там, где отпустили
                 isCorrectlyPlaced = false;
                 rectTransform.SetAsLastSibling();
             }
@@ -295,7 +334,7 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         if (scrollRectContent == null) return;
 
         // Восстанавливаем исходный размер (20x20)
-        float displaySize = 20f; 
+        float displaySize = 20f;
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, displaySize);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, displaySize);
 
@@ -420,6 +459,68 @@ public class PuzzlePieceDragHandler : MonoBehaviour, IBeginDragHandler, IDragHan
         Vector3 localPosition = rectTransform.localPosition;
         localPosition.z = 0;
         rectTransform.localPosition = localPosition;
+    }
+
+    public void SnapToCorrectPosition()
+    {
+        if (isCorrectlyPlaced) return; // Уже на месте
+
+        DropZone dropZone = Object.FindFirstObjectByType<DropZone>();
+        if (dropZone == null)
+        {
+            Debug.LogError("Cannot snap piece: DropZone not found!");
+            return;
+        }
+
+        // 1. Меняем родителя на DropZone
+        rectTransform.SetParent(dropZone.transform, false);
+        rectTransform.localScale = Vector3.one;
+
+        // 2. Устанавливаем правильный размер
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSizeInDropZone.x);
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSizeInDropZone.y);
+
+        // 3. Вычисляем и устанавливаем правильную позицию
+        Vector2 targetAnchoredPosition = Vector2.zero;
+        if (isTriangulationPiece)
+        {
+            // Для треугольных пазлов позиция уже предрассчитана
+            targetAnchoredPosition = targetPosition;
+        }
+        else
+        {
+            // Для классических пазлов вычисляем по сетке
+            float cellWidth = dropZone.rectTransform.rect.width / dropZone.gridSize;
+            float cellHeight = dropZone.rectTransform.rect.height / dropZone.gridSize;
+            targetAnchoredPosition = new Vector2(
+                dropZone.rectTransform.rect.xMin + cellWidth * (targetCol + 0.5f),
+                dropZone.rectTransform.rect.yMax - cellHeight * (targetRow + 0.5f)
+            );
+        }
+
+        rectTransform.anchoredPosition = targetAnchoredPosition;
+        rectTransform.SetAsFirstSibling(); // Помещаем позади других пазлов в дропзоне
+
+        // 4. Помечаем как правильно размещенный
+        isCorrectlyPlaced = true;
+        this.enabled = false; // Отключаем перетаскивание
+        wasPlacedInDropZone = true;
+
+        if (canvasGroup != null)
+            canvasGroup.blocksRaycasts = false;
+        else
+            GetComponent<Graphic>().raycastTarget = false;
+
+        // 5. Воспроизводим эффекты и регистрируем завершение
+        PlayBounceAndShineEffect();
+        PlayCorrectSound();
+
+        Debug.Log(isTriangulationPiece
+            ? $"Треугольный пазл {triangleIndex} приклеен!"
+            : $"Пазл [{targetRow},{targetCol}] приклеен!");
+
+        PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
+        puzzleGen?.RegisterCorrectPlacement();
     }
 
 }

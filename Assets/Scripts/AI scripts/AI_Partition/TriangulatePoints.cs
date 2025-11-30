@@ -1,86 +1,90 @@
-using UnityEngine;
 using System.Collections.Generic;
 using TriangleNet.Geometry;
 using TriangleNet.Meshing;
+using UnityEngine;
 
 public static class TriangulatePoints
 {
-    private const float normDist = 30f;
+    // ”величим минимальное рассто€ние между точками дл€ уменьшени€ плотности
+    private const float MIN_SEP = 15f;
 
-    public static List<Vector2> NormalizePoints(List<Vector2> points)
+    public static (Vector2[], int[]) Triangulate(List<Vector2> pts, float mapSize)
     {
-        List<Vector2> result = new List<Vector2>();
+        // Ѕолее агрессивное удаление близких точек
+        pts = RemoveClose(pts, MIN_SEP);
 
-        foreach (var p in points)
+        // ќграничиваем точки границами с большим отступом
+        float margin = 20f;
+        for (int i = 0; i < pts.Count; i++)
         {
-            Vector2 x = p;
-
-            foreach (var pj in points)
-            {
-                if (p == pj) continue;
-
-                float dx = x.x - pj.x;
-                float dy = x.y - pj.y;
-                float distance = Mathf.Sqrt(dx * dx + dy * dy);
-
-                if (distance <= normDist && distance > 0.0001f)
-                {
-                    float compens = (normDist - distance);
-                    x += new Vector2(dx, dy) * (compens / distance);
-                }
-            }
-
-            // Clamp
-            x.x = Mathf.Clamp(x.x, normDist, 512 - normDist);
-            x.y = Mathf.Clamp(x.y, normDist, 512 - normDist);
-
-            result.Add(x);
+            Vector2 p = pts[i];
+            p.x = Mathf.Clamp(p.x, margin, mapSize - margin);
+            p.y = Mathf.Clamp(p.y, margin, mapSize - margin);
+            pts[i] = p;
         }
 
-        return result;
-    }
-
-    public static List<Vector2> AddBorderPoints(List<Vector2> pts)
-    {
-        pts.AddRange(new[]
-        {
-            new Vector2(0,   0),
-            new Vector2(0,   256),
-            new Vector2(0,   512),
-            new Vector2(256, 512),
-            new Vector2(512, 512),
-            new Vector2(512, 256),
-            new Vector2(512, 0),
-            new Vector2(256, 0),
-        });
-
-        return pts;
-    }
-
-    public static (Vector2[], int[]) DelaunayTriangulate(List<Vector2> pts)
-    {
         Polygon poly = new Polygon();
 
-        for (int i = 0; i < pts.Count; i++)
-            poly.Add(new Vertex(pts[i].x, pts[i].y, i));
+        // ƒобавл€ем углы карты
+        var A = new Vertex(0, 0);
+        var B = new Vertex(mapSize, 0);
+        var C = new Vertex(mapSize, mapSize);
+        var D = new Vertex(0, mapSize);
 
-        var mesh = poly.Triangulate(new ConstraintOptions(), new QualityOptions());
+        poly.Add(A); poly.Add(B); poly.Add(C); poly.Add(D);
+
+        // ƒобавл€ем границы
+        poly.Add(new Segment(A, B));
+        poly.Add(new Segment(B, C));
+        poly.Add(new Segment(C, D));
+        poly.Add(new Segment(D, A));
+
+        // ƒобавл€ем точки
+        foreach (var pt in pts)
+            poly.Add(new Vertex(pt.x, pt.y));
+
+        // »спользуем менее строгие настройки триангул€ции
+        var mesh = poly.Triangulate(
+            new ConstraintOptions() { ConformingDelaunay = true },
+            new QualityOptions() { MinimumAngle = 25 } // ”величиваем минимальный угол дл€ менее плотной триангул€ции
+        );
+
+        List<Vector2> verts = new List<Vector2>();
+        Dictionary<int, int> idmap = new Dictionary<int, int>();
+
+        foreach (var v in mesh.Vertices)
+        {
+            idmap[v.ID] = verts.Count;
+            verts.Add(new Vector2((float)v.X, (float)v.Y));
+        }
 
         List<int> tri = new List<int>();
         foreach (var t in mesh.Triangles)
         {
-            tri.Add(t.vertices[0].id);
-            tri.Add(t.vertices[1].id);
-            tri.Add(t.vertices[2].id);
+            tri.Add(idmap[t.vertices[0].ID]);
+            tri.Add(idmap[t.vertices[1].ID]);
+            tri.Add(idmap[t.vertices[2].ID]);
         }
 
-        return (pts.ToArray(), tri.ToArray());
+        return (verts.ToArray(), tri.ToArray());
     }
 
-    public static (Vector2[], int[]) Triangulate(List<Vector2> points)
+    private static List<Vector2> RemoveClose(List<Vector2> pts, float sep)
     {
-        var norm = NormalizePoints(points);
-        AddBorderPoints(norm);
-        return DelaunayTriangulate(norm);
+        List<Vector2> result = new List<Vector2>();
+        foreach (var p in pts)
+        {
+            bool ok = true;
+            foreach (var q in result)
+            {
+                if (Vector2.Distance(p, q) < sep)
+                {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) result.Add(p);
+        }
+        return result;
     }
 }

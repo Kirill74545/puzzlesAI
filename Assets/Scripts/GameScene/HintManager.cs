@@ -403,101 +403,66 @@ public class HintManager : MonoBehaviour
         return misplacedPieces;
     }
 
+    // В классе HintManager.cs
+
     void MovePieceToCorrectPosition(PuzzlePieceDragHandler piece)
     {
-        if (dropZone == null)
+        if (piece == null || dropZone == null)
         {
-            Debug.LogError("DropZone не назначен в HintManager!");
+            Debug.LogError("MovePieceToCorrectPosition: Деталь или DropZone не найдены!");
             return;
         }
 
         RectTransform dropZoneRT = dropZone.GetComponent<RectTransform>();
-
-        if (dropZoneRT == null)
-        {
-            Debug.LogError("DropZone RectTransform не найден!");
-            return;
-        }
-
-        // Убедимся, что дропзона имеет правильные размеры
-        LayoutRebuilder.ForceRebuildLayoutImmediate(dropZoneRT);
-        Canvas.ForceUpdateCanvases();
-
-        // Получаем размеры дропзоны
-        float dropZoneWidth = dropZoneRT.rect.width;
-        float dropZoneHeight = dropZoneRT.rect.height;
-
-        // Проверка, чтобы избежать деления на ноль
-        if (dropZone.gridSize <= 0)
-        {
-            Debug.LogError("DropZone gridSize <= 0!");
-            return;
-        }
-
-        // Вычисляем размер ячейки
-        float cellWidth = dropZoneWidth / dropZone.gridSize;
-        float cellHeight = dropZoneHeight / dropZone.gridSize;
-
-        Debug.Log($"DropZone размеры: {dropZoneWidth}x{dropZoneHeight}");
-        Debug.Log($"Размер ячейки: {cellWidth}x{cellHeight}");
-        Debug.Log($"gridSize: {dropZone.gridSize}, targetRow: {piece.targetRow}, targetCol: {piece.targetCol}");
-
-        float x = -(dropZoneWidth / 2f) + (piece.targetCol * cellWidth) + (cellWidth / 2f);
-        float y = (dropZoneHeight / 2f) - (piece.targetRow * cellHeight) - (cellHeight / 2f);
-
-        Vector2 targetPosition = dropZone.GetCorrectCellPosition(piece.targetRow, piece.targetCol);
-
-        Debug.Log($"Рассчитанная позиция: ({x}, {y}) для ячейки [{piece.targetRow}, {piece.targetCol}]");
-
         RectTransform pieceRT = piece.GetComponent<RectTransform>();
 
-        // Сохраняем оригинальные настройки
-        Vector2 originalAnchorMin = pieceRT.anchorMin;
-        Vector2 originalAnchorMax = pieceRT.anchorMax;
-        Vector2 originalPivot = pieceRT.pivot;
+        // --- ОБЩАЯ ЧАСТЬ ДЛЯ ВСЕХ ПАЗЛОВ ---
 
-        // Устанавливаем anchor и pivot в центр для точного позиционирования
+        // 1. Перемещаем деталь в DropZone, если она еще не там
+        if (pieceRT.parent != dropZoneRT)
+        {
+            pieceRT.SetParent(dropZoneRT, false);
+        }
+
+        // 2. Устанавливаем правильный размер
+        pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, piece.targetSizeInDropZone.x);
+        pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, piece.targetSizeInDropZone.y);
+
+        // 3. Устанавливаем anchors и pivot в центр для точного позиционирования
         pieceRT.anchorMin = new Vector2(0.5f, 0.5f);
         pieceRT.anchorMax = new Vector2(0.5f, 0.5f);
         pieceRT.pivot = new Vector2(0.5f, 0.5f);
 
-        // Если деталь находится в ScrollRect, извлекаем её оттуда
-        if (piece.scrollRectContent != null && pieceRT.parent == piece.scrollRectContent)
+        // 4. Вычисляем и устанавливаем правильную позицию в зависимости от типа пазла
+        Vector2 targetAnchoredPosition = Vector2.zero;
+
+        if (piece.isTriangulationPiece)
         {
-            Debug.Log("Деталь находится в ScrollRect, перемещаем в дропзону");
-            pieceRT.SetParent(dropZoneRT, false);
+            // --- ЛОГИКА ДЛЯ ТРИАНГУЛЯЦИОННЫХ ПАЗЛОВ ---
+            // Позиция уже была предрассчитана в TriangulationPuzzleGenerator
+            // и сохранена в piece.targetPosition
+            targetAnchoredPosition = piece.targetPosition;
+            Debug.Log($"Подсказка: Размещаю треугольный пазл {piece.triangleIndex} на позицию {targetAnchoredPosition}");
         }
         else
         {
-            Debug.Log("Деталь уже не в ScrollRect, устанавливаем позицию");
-            // Убедимся, что деталь находится в дропзоне
-            if (pieceRT.parent != dropZoneRT)
-            {
-                pieceRT.SetParent(dropZoneRT, false);
-            }
+            // --- ЛОГИКА ДЛЯ КЛАССИЧЕСКИХ ПАЗЛОВ ---
+            // Вычисляем позицию по сетке
+            targetAnchoredPosition = dropZone.GetCorrectCellPosition(piece.targetRow, piece.targetCol);
+            Debug.Log($"Подсказка: Размещаю классический пазл [{piece.targetRow},{piece.targetCol}] на позицию {targetAnchoredPosition}");
         }
 
-        // Устанавливаем правильный размер для ячейки в дропзоне
-        pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellWidth);
-        pieceRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellHeight);
+        // Устанавливаем итоговую позицию
+        pieceRT.anchoredPosition = targetAnchoredPosition;
+        pieceRT.localPosition = new Vector3(pieceRT.localPosition.x, pieceRT.localPosition.y, 0); // Сбрасываем Z
 
-        // Устанавливаем позицию
-        pieceRT.anchoredPosition = targetPosition;
+        // --- ФИНАЛЬНЫЕ ДЕЙСТВИЯ ДЛЯ ВСЕХ ПАЗЛОВ ---
 
-        // Сбрасываем локальную позицию Z
-        Vector3 localPos = pieceRT.localPosition;
-        localPos.z = 0;
-        pieceRT.localPosition = localPos;
-
-        // Визуальная проверка положения
-        Vector3 screenPos = RectTransformUtility.WorldToScreenPoint(null, pieceRT.position);
-        Debug.Log($"Позиция на экране: {screenPos}");
-
-        // Обновляем состояние пазла
+        // Помечаем как правильно размещенный
         piece.isCorrectlyPlaced = true;
-        piece.enabled = false; // отключаем перетаскивание
+        piece.enabled = false; // Отключаем перетаскивание
 
-        // Обновляем CanvasGroup
+        // Отключаем raycast
         CanvasGroup canvasGroup = piece.GetComponent<CanvasGroup>();
         if (canvasGroup != null)
         {
@@ -514,14 +479,12 @@ public class HintManager : MonoBehaviour
         piece.PlayBounceAndShineEffect();
         piece.PlayCorrectSound();
 
-        // Регистрируем правильное размещение
+        // Регистрируем правильное размещение в общем генераторе
         PuzzleGenerator puzzleGen = Object.FindFirstObjectByType<PuzzleGenerator>();
         if (puzzleGen != null)
         {
             puzzleGen.RegisterCorrectPlacement();
         }
-
-        Debug.Log($"Автоматически размещена деталь [{piece.targetRow},{piece.targetCol}] на позицию: {targetPosition}");
     }
 
     void UpdateHintButtonState()

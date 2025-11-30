@@ -1060,6 +1060,7 @@ public class InputPanelController : MonoBehaviour
     void OnChoiceSelected(string choice)
     {
         selectedChoice = choice;
+        GameData.SelectedMode = choice;
         currentState = AppState.LevelSelection;
 
         HideUIElement(classikButton.gameObject);

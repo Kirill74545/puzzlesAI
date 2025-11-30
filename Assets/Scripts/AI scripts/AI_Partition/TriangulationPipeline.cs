@@ -1,37 +1,49 @@
-using UnityEngine;
 using System.Collections.Generic;
+using TriangleNet.Geometry;
+using TriangleNet.Meshing;
+using UnityEngine;
 
 public static class TriangulationPipeline
 {
-    private const float MAP_SIZE = 512f;
-
-    public static List<TriangleData> Generate(PointGeneratorUnity generator)
+    public static List<TriangleData> Generate(PointGeneratorUnity generator, string difficultyLevel)
     {
-        // 1. Генерация точек нейросетью
-        Vector2[] generated = generator.GeneratePoints();
-
-        // 2. Превращаем в список
+        int pointsCount = GetPointsCountByDifficulty(difficultyLevel);
+        Vector2[] generated = generator.GeneratePoints(pointsCount);
         List<Vector2> inputPoints = new List<Vector2>(generated);
 
-        // 3. Триангулируем
-        var (verts, tris) = TriangulatePoints.Triangulate(inputPoints);
+        float MAP_SIZE = 512f;
+        var (verts, tris) = TriangulatePoints.Triangulate(inputPoints, MAP_SIZE);
 
-        // 4. Конвертация вершин в UV + центры
-        List<TriangleData> results = new List<TriangleData>(tris.Length / 3);
-
+        List<TriangleData> result = new List<TriangleData>();
+        int index = 0;
         for (int i = 0; i < tris.Length; i += 3)
         {
             Vector2 A = verts[tris[i]];
             Vector2 B = verts[tris[i + 1]];
             Vector2 C = verts[tris[i + 2]];
 
-            Vector2 uvA = A / MAP_SIZE;
-            Vector2 uvB = B / MAP_SIZE;
-            Vector2 uvC = C / MAP_SIZE;
+            Vector2 uvA = new Vector2(A.x / MAP_SIZE, A.y / MAP_SIZE);
+            Vector2 uvB = new Vector2(B.x / MAP_SIZE, B.y / MAP_SIZE);
+            Vector2 uvC = new Vector2(C.x / MAP_SIZE, C.y / MAP_SIZE);
 
-            results.Add(new TriangleData(uvA, uvB, uvC));
+            // Просто создаем TriangleData с новой логикой конструктора
+            result.Add(new TriangleData(uvA, uvB, uvC, index));
+            index++;
         }
 
-        return results;
+        Debug.Log($"Сгенерировано {result.Count} треугольников для уровня {difficultyLevel}");
+        return result;
+    }
+
+    private static int GetPointsCountByDifficulty(string difficultyLevel)
+    {
+        switch (difficultyLevel)
+        {
+            case "level1": return 8;
+            case "level2": return 12;
+            case "level3": return 16;
+            case "level4": return 20;
+            default: return 8;
+        }
     }
 }

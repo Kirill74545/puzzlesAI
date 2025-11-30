@@ -4,12 +4,13 @@ using Unity.Barracuda;
 public class PointGeneratorUnity : MonoBehaviour
 {
     public NNModel onnxModel;
-
     private IWorker worker;
     private Model runtimeModel;
-
     private const int LATENT_DIM = 128;
-    private const int N_POINTS = 20;
+
+    // Замените константу на настраиваемое поле
+    [Header("Настройки количества точек")]
+    public int pointsCount = 10; // По умолчанию для Easy
 
     void Awake()
     {
@@ -17,8 +18,11 @@ public class PointGeneratorUnity : MonoBehaviour
         worker = WorkerFactory.CreateWorker(WorkerFactory.Type.Auto, runtimeModel);
     }
 
-    public Vector2[] GeneratePoints()
+    public Vector2[] GeneratePoints(int customPointsCount = -1)
     {
+        // Используем переданное количество или значение по умолчанию
+        int actualPointsCount = customPointsCount > 0 ? customPointsCount : pointsCount;
+
         Tensor z = new Tensor(1, LATENT_DIM);
 
         for (int i = 0; i < LATENT_DIM; i++)
@@ -27,14 +31,10 @@ public class PointGeneratorUnity : MonoBehaviour
         worker.Execute(z);
 
         Tensor output = worker.PeekOutput("points");
-        Debug.Log(
-            $"output.shape => batch={output.shape.batch}, height={output.shape.height}, width={output.shape.width}, channels={output.shape.channels}"
-        );
 
-        Vector2[] pts = new Vector2[N_POINTS];
+        Vector2[] pts = new Vector2[actualPointsCount];
 
-        // ВАЖНО: твоя модель возвращает shape [1, 1, 2, 20]
-        for (int i = 0; i < N_POINTS; i++)
+        for (int i = 0; i < actualPointsCount; i++)
         {
             float x = output[0, 0, 0, i];
             float y = output[0, 0, 1, i];

@@ -22,6 +22,10 @@ public class PuzzleGenerator : MonoBehaviour
     [Header("Таймер")]
     public TextMeshProUGUI timerText;
 
+    [Header("Генераторы")]
+    public TriangulationPuzzleGenerator triangulationGenerator;
+    public PointGeneratorUnity pointGenerator;
+
     private float elapsedTime = 0f;
     private bool isTimerRunning = false;
     private int totalPieces = 0;
@@ -152,12 +156,12 @@ public class PuzzleGenerator : MonoBehaviour
         if (coinsEarned > 0)
         {
             int currentCoins = PlayerPrefs.GetInt("TotalCoins", 0);
-            int newTotalCoins = currentCoins + coinsEarned; 
+            int newTotalCoins = currentCoins + coinsEarned;
             PlayerPrefs.SetInt("TotalCoins", newTotalCoins);
             PlayerPrefs.Save();
 
             var coinManager = Object.FindFirstObjectByType<CoinManager>();
-            coinManager?.UpdateDisplay(newTotalCoins); 
+            coinManager?.UpdateDisplay(newTotalCoins);
             Debug.Log($"Начислено монет: {coinsEarned}. Всего монет: {newTotalCoins}");
         }
 
@@ -185,6 +189,66 @@ public class PuzzleGenerator : MonoBehaviour
     }
 
     void GeneratePuzzle()
+    {
+        string selectedMode = GameData.SelectedMode ?? "classik";
+
+        if (selectedMode == "random" && triangulationGenerator != null && pointGenerator != null)
+        {
+            GenerateTriangulationPuzzle();
+        }
+        else
+        {
+            GenerateClassicPuzzle();
+        }
+    }
+
+    void GenerateTriangulationPuzzle()
+    {
+        if (fullTexture == null)
+        {
+            Debug.LogError("Нет текстуры для генерации триангуляционного пазла");
+            return;
+        }
+
+        triangulationGenerator.Initialize(fullTexture, GameData.SelectedLevel);
+
+        totalPieces = triangulationGenerator.GetComponent<TriangulationPuzzleGenerator>().TriangleCount;
+        correctlyPlacedCount = 0;
+        elapsedTime = 0f;
+        StartTimerWithAnimation();
+
+        // Настройка времени
+        if (puzzle != null)
+        {
+            switch (GameData.SelectedLevel)
+            {
+                case "level1":
+                    puzzle.referenceTime = 45f;
+                    puzzle.difficultyMult = 0.8f;
+                    break;
+                case "level2":
+                    puzzle.referenceTime = 120f;
+                    puzzle.difficultyMult = 1.0f;
+                    break;
+                case "level3":
+                    puzzle.referenceTime = 240f;
+                    puzzle.difficultyMult = 1.2f;
+                    break;
+                case "level4":
+                    puzzle.referenceTime = 420f;
+                    puzzle.difficultyMult = 1.5f;
+                    break;
+                default:
+                    puzzle.referenceTime = 60f;
+                    puzzle.difficultyMult = 1f;
+                    break;
+            }
+        }
+
+        Debug.Log($"Триангуляционный пазл: {totalPieces} элементов");
+    }
+
+    void GenerateClassicPuzzle()
     {
         if (dropZone != null)
         {

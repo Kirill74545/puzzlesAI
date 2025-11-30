@@ -7,6 +7,9 @@ public class DropZone : MonoBehaviour
     private Camera uiCamera;
     public int gridSize = 5;
 
+    [Header("Триангуляция")]
+    public TriangulationPuzzleGenerator triangulationGenerator;
+
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
