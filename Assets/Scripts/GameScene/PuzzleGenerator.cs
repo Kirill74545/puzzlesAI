@@ -140,7 +140,9 @@ public class PuzzleGenerator : MonoBehaviour
             Debug.LogWarning("HintManager не найден при завершении уровня. Предполагаем, что подсказки не использовались.");
         }
 
-        PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime, hintsUsed);
+        string gameMode = (GameData.SelectedMode == "classik") ? "classic" : GameData.SelectedMode;
+        PuzzleStatsManager.Instance.AddCompletedLevel(GameData.SelectedLevel, elapsedTime, gameMode, hintsUsed);
+        PlayerPrefs.Save();
         Debug.Log($"Пазл завершён за {elapsedTime:F2} секунд!");
 
         int coinsEarned = 0;

@@ -9,13 +9,15 @@ public class PuzzleLevelRecord
     public float completionTimeSeconds;
     public string completionDate; // ISO формат: "2025-10-25T14:30:00"
     public bool usedHints; // Ќовое поле: использовались ли подсказки
+    public string gameMode; // Ќовое поле: "classic" или "random"
 
-    public PuzzleLevelRecord(string levelName, float time, bool usedHints = false)
+    public PuzzleLevelRecord(string levelName, float time, string gameMode = "classic", bool usedHints = false)
     {
         this.levelName = levelName;
         this.completionTimeSeconds = time;
         this.completionDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
         this.usedHints = usedHints;
+        this.gameMode = gameMode;
     }
 }
 
@@ -52,9 +54,10 @@ public class PuzzleStatsManager : MonoBehaviour
         LoadStats();
     }
 
-    public void AddCompletedLevel(string levelName, float timeInSeconds, bool usedHints = false)
+    // ƒобавление записи с указанием режима игры
+    public void AddCompletedLevel(string levelName, float timeInSeconds, string gameMode = "classic", bool usedHints = false)
     {
-        _records.Add(new PuzzleLevelRecord(levelName, timeInSeconds, usedHints));
+        _records.Add(new PuzzleLevelRecord(levelName, timeInSeconds, gameMode, usedHints));
         SaveStats();
     }
 
@@ -68,9 +71,37 @@ public class PuzzleStatsManager : MonoBehaviour
         return _records.Count;
     }
 
-    public int GetCompletedLevelsCountByName(string levelName)
+    // ѕолучение количества пройденных уровней дл€ конкретного режима
+    public int GetCompletedLevelsCountByName(string levelName, string gameMode = "classic")
     {
-        return _records.FindAll(r => r.levelName == levelName).Count;
+        return _records.FindAll(r => r.levelName == levelName && r.gameMode == gameMode).Count;
+    }
+
+    // ѕолучение лучшего времени дл€ уровн€ в конкретном режиме
+    public float GetBestTimeForLevel(string levelName, string gameMode = "classic")
+    {
+        float best = float.MaxValue;
+        bool found = false;
+
+        foreach (var record in _records)
+        {
+            if (record.levelName == levelName && record.gameMode == gameMode && !record.usedHints)
+            {
+                if (record.completionTimeSeconds < best)
+                {
+                    best = record.completionTimeSeconds;
+                    found = true;
+                }
+            }
+        }
+
+        return found ? best : -1f;
+    }
+
+    // ѕолучение лучшего времени без подсказок дл€ уровн€ в конкретном режиме
+    public float GetBestTimeForLevelWithoutHints(string levelName, string gameMode = "classic")
+    {
+        return GetBestTimeForLevel(levelName, gameMode);
     }
 
     private void SaveStats()
@@ -89,6 +120,18 @@ public class PuzzleStatsManager : MonoBehaviour
             {
                 var wrapper = JsonUtility.FromJson<StatsWrapper>(json);
                 _records = wrapper.records ?? new List<PuzzleLevelRecord>();
+
+                // ћиграци€ старых записей (без пол€ gameMode)
+                foreach (var record in _records)
+                {
+                    if (string.IsNullOrEmpty(record.gameMode))
+                    {
+                        // ѕо умолчанию считаем, что старые записи - это классический режим
+                        record.gameMode = "classic";
+                    }
+                }
+
+                SaveStats(); // —охран€ем обновленные данные после миграции
             }
             catch (Exception e)
             {
@@ -102,49 +145,28 @@ public class PuzzleStatsManager : MonoBehaviour
         }
     }
 
-    public float GetBestTimeForLevel(string levelName)
-    {
-        float best = float.MaxValue;
-        bool found = false;
-
-        foreach (var record in _records)
-        {
-            if (record.levelName == levelName && !record.usedHints)
-            {
-                if (record.completionTimeSeconds < best)
-                {
-                    best = record.completionTimeSeconds;
-                    found = true;
-                }
-            }
-        }
-
-        return found ? best : -1f;
-    }
-
-    public float GetBestTimeForLevelWithoutHints(string levelName)
-    {
-        float best = float.MaxValue;
-        bool found = false;
-
-        foreach (var record in _records) 
-        {
-            if (record.levelName == levelName && !record.usedHints) 
-            {
-                if (record.completionTimeSeconds < best)
-                {
-                    best = record.completionTimeSeconds;
-                    found = true;
-                }
-            }
-        }
-
-        return found ? best : -1f;
-    }
-
     [Serializable]
     private class StatsWrapper
     {
         public List<PuzzleLevelRecord> records;
+    }
+
+    // ƒополнительные методы дл€ получени€ общей статистики по режимам
+    public int GetTotalCompletedLevelsByMode(string gameMode)
+    {
+        return _records.FindAll(r => r.gameMode == gameMode).Count;
+    }
+
+    public Dictionary<string, int> GetLevelsCompletionCountByMode(string gameMode)
+    {
+        var result = new Dictionary<string, int>();
+        var levels = new string[] { "level1", "level2", "level3", "level4" };
+
+        foreach (var level in levels)
+        {
+            result[level] = GetCompletedLevelsCountByName(level, gameMode);
+        }
+
+        return result;
     }
 }

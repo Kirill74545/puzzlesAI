@@ -39,11 +39,11 @@ public static class TriangulationPipeline
     {
         switch (difficultyLevel)
         {
-            case "level1": return 8;
-            case "level2": return 12;
-            case "level3": return 16;
+            case "level1": return 4;
+            case "level2": return 8;
+            case "level3": return 15;
             case "level4": return 20;
-            default: return 8;
+            default: return 4;
         }
     }
 }

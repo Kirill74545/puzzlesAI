@@ -12,6 +12,12 @@ public class StatsUI : MonoBehaviour, ICloseable
     public GameObject backgroundBlocker;   // Прозрачный фон-блокер (дочерний элемент statsPanel)
     public ProgressPopupUI progressPopupUI;
 
+    [Header("Кнопки режимов")]
+    public Button classicModeButton;
+    public Button randomModeButton;
+    public TextMeshProUGUI classicModeText;
+    public TextMeshProUGUI randomModeText;
+
     [Header("Анимация")]
     public Vector2 appearPosition = new Vector2(0, 0);
     public Vector2 hiddenPosition = new Vector2(0, -1000); // появляется снизу
@@ -23,6 +29,16 @@ public class StatsUI : MonoBehaviour, ICloseable
     private RectTransform panelRect;
     public bool isStatsPanelOpen = false;
     private InputPanelController inputPanelController;
+
+    // Текущий выбранный режим для отображения статистики
+    private GameMode currentMode = GameMode.Classic;
+
+    // Перечисление режимов игры
+    private enum GameMode
+    {
+        Classic,
+        Random
+    }
 
     void Start()
     {
@@ -44,8 +60,17 @@ public class StatsUI : MonoBehaviour, ICloseable
         {
             blockerButton.onClick.AddListener(HideStats);
         }
+
+        // Подписка на кнопки режимов
+        if (classicModeButton != null)
+            classicModeButton.onClick.AddListener(() => SwitchMode(GameMode.Classic));
+        if (randomModeButton != null)
+            randomModeButton.onClick.AddListener(() => SwitchMode(GameMode.Random));
+
         inputPanelController = Object.FindFirstObjectByType<InputPanelController>();
 
+        // Устанавливаем начальный режим
+        UpdateModeButtons();
     }
 
     public void ToggleStats()
@@ -110,24 +135,69 @@ public class StatsUI : MonoBehaviour, ICloseable
                   });
     }
 
+    // Переключение режима статистики
+    private void SwitchMode(GameMode mode)
+    {
+        currentMode = mode;
+        UpdateModeButtons();
+        UpdateStatsText();
+    }
+
+    private void UpdateModeButtons()
+    {
+        if (classicModeButton == null || randomModeButton == null) return;
+
+        // Сбрасываем цвета кнопок
+        ColorBlock classicColors = classicModeButton.colors;
+        ColorBlock randomColors = randomModeButton.colors;
+
+        // Светлый цвет для неактивной кнопки
+        classicColors.normalColor = new Color32(70, 130, 180, 255); // Синий цвет для неактивной кнопки
+        randomColors.normalColor = new Color32(70, 130, 180, 255);  // Синий цвет для неактивной кнопки
+
+        // Темный цвет для активной кнопки (текущего режима)
+        if (currentMode == GameMode.Classic)
+        {
+            classicColors.normalColor = new Color32(50, 50, 50, 255); // Темный цвет для активной кнопки
+        }
+        else
+        {
+            randomColors.normalColor = new Color32(50, 50, 50, 255); // Темный цвет для активной кнопки
+        }
+
+        classicModeButton.colors = classicColors;
+        randomModeButton.colors = randomColors;
+
+        // Обновляем текст на кнопках, если нужно
+        if (classicModeText != null)
+            classicModeText.text = "Классический";
+        if (randomModeText != null)
+            randomModeText.text = "Случайный";
+    }
+
     private void UpdateStatsText()
     {
         var levelSystem = Object.FindFirstObjectByType<PlayerLevelSystem>();
 
         int totalScore = PlayerPrefs.GetInt("PlayerTotalScore", 0);
         int currentLevel = PlayerPrefs.GetInt("PlayerCurrentLevel", 1);
-        string output = "<b><size=40>СТАТИСТИКА ПАЗЛОВ</size></b>\n\n";
+
+        // Определяем заголовок в зависимости от режима
+        string modeName = currentMode == GameMode.Classic ? "КЛАССИЧЕСКИЙ РЕЖИМ" : "СЛУЧАЙНЫЙ РЕЖИМ";
+        string output = $"<b><size=40>СТАТИСТИКА ПАЗЛОВ</size></b>\n<size=24>({modeName})</size>\n\n";
 
         output += $"<b>Всего очков:</b> {totalScore}\n";
         output += $"<b>Текущий уровень:</b> {currentLevel}\n\n";
 
-        // Статистика по уровням
+        // Статистика по уровням - разная для каждого режима
         var levelNames = new string[] { "level1", "level2", "level3", "level4" };
-
+        string modeForQuery = currentMode == GameMode.Classic ? "classic" : "random";
         foreach (var level in levelNames)
         {
-            int count = PuzzleStatsManager.Instance.GetCompletedLevelsCountByName(level);
-            float bestTime = PuzzleStatsManager.Instance.GetBestTimeForLevel(level);
+            // Получаем статистику для конкретного режима
+            int count = PuzzleStatsManager.Instance.GetCompletedLevelsCountByName(level, modeForQuery);
+
+            float bestTime = PuzzleStatsManager.Instance.GetBestTimeForLevel(level, modeForQuery);
 
             string levelDisplayName = GetLevelDisplayName(level);
             output += $"<b>{levelDisplayName}</b>\n";
@@ -154,10 +224,10 @@ public class StatsUI : MonoBehaviour, ICloseable
     {
         return levelKey switch
         {
-            "level1" => "Новичок (4x4)",
-            "level2" => "Любитель (5x5)",
-            "level3" => "Профессионал (7x7)",
-            "level4" => "Мастер (9x9)",
+            "level1" => "Easy",
+            "level2" => "Medium",
+            "level3" => "Hard",
+            "level4" => "Very hard",
             _ => levelKey
         };
     }
