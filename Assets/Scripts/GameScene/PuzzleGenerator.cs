@@ -434,7 +434,7 @@ public class PuzzleGenerator : MonoBehaviour
         try
         {
             byte[] bytes = System.Convert.FromBase64String(base64Data);
-            Texture2D texture = new Texture2D(2, 2); // dummy size
+            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false); // dummy size
             if (texture.LoadImage(bytes))
             {
                 Debug.Log($"ѕользовательское изображение загружено: {texture.width}x{texture.height}");

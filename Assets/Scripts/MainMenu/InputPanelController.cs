@@ -462,6 +462,7 @@ public class InputPanelController : MonoBehaviour
         userTexture = new Texture2D(256, 256);
         savedInput = "user image";
 
+
         if (loadingIndicator != null)
         {
             loadingIndicator.SetActive(true);
@@ -668,10 +669,9 @@ public class InputPanelController : MonoBehaviour
         if (token.IsCancellationRequested)
         {
             Debug.Log("ProcessUserImageSubmission: Отменено пользователем.");
-            // Очистка токена в этом случае
             userImageCts?.Dispose();
             userImageCts = null;
-            yield break; // Выходим из корутины
+            yield break;
         }
 
         yield return new WaitForSeconds(2f);
@@ -679,10 +679,9 @@ public class InputPanelController : MonoBehaviour
         if (token.IsCancellationRequested)
         {
             Debug.Log("ProcessUserImageSubmission: Отменено пользователем после ожидания.");
-            // Очистка токена в этом случае
             userImageCts?.Dispose();
             userImageCts = null;
-            yield break; 
+            yield break;
         }
 
         if (miniGame != null && miniGame.isActive)
@@ -699,9 +698,24 @@ public class InputPanelController : MonoBehaviour
         if (!token.IsCancellationRequested)
         {
             GameData.InputMode = "user image";
-            GameData.UserImage = userTexture;
+
+            Texture2D safeTexture = MakeReadableAndResize(userTexture, 1024);
+
+            GameData.UserImage = safeTexture;
+
+            byte[] bytes = safeTexture.EncodeToPNG();
+            PlayerPrefs.SetString("UserImageData", System.Convert.ToBase64String(bytes));
+            PlayerPrefs.Save();
+
+            if (userTexture != null && userTexture != safeTexture)
+            {
+                Destroy(userTexture);
+            }
+            userTexture = safeTexture;
+
             SetUserPromptImage();
             currentState = AppState.ImageConfirmed;
+
             if (promptImage != null) ShowUIElement(promptImage);
             if (confirmButton2 != null) ShowUIElement(confirmButton2.gameObject);
             if (backToInputButton != null) ShowUIElement(backToInputButton.gameObject);
@@ -709,11 +723,49 @@ public class InputPanelController : MonoBehaviour
         else
         {
             Debug.Log("ProcessUserImageSubmission: Установка изображения отменена.");
-            // Очистка токена в этом случае
             userImageCts?.Dispose();
             userImageCts = null;
         }
+    }
 
+    Texture2D MakeReadableAndResize(Texture2D source, int maxSize)
+    {
+        // Шаг 1: Делаем текстуру читаемой
+        RenderTexture rt = RenderTexture.GetTemporary(source.width, source.height);
+        Graphics.Blit(source, rt);
+
+        RenderTexture prevRT = RenderTexture.active;
+        RenderTexture.active = rt;
+
+        Texture2D readableTex = new Texture2D(source.width, source.height);
+        readableTex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        readableTex.Apply();
+
+        RenderTexture.active = prevRT;
+        RenderTexture.ReleaseTemporary(rt);
+
+        // Шаг 2: Уменьшаем размер для скорости
+        int width = readableTex.width;
+        int height = readableTex.height;
+
+        float ratio = (float)width / height;
+        if (width > height && width > maxSize)
+        {
+            width = maxSize;
+            height = (int)(maxSize / ratio);
+        }
+        else if (height > maxSize)
+        {
+            height = maxSize;
+            width = (int)(maxSize * ratio);
+        }
+
+        Texture2D resized = new Texture2D(width, height);
+        resized.SetPixels(readableTex.GetPixels(0, 0, width, height)); 
+        resized.Apply();
+
+        Destroy(readableTex); 
+        return resized;
     }
 
     IEnumerator FetchImageFromWikimedia(string query, CancellationToken token)

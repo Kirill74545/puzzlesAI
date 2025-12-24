@@ -22,7 +22,7 @@ public class GenerateResponse
 // --- Основной класс ---
 public class Gen_image_AI : MonoBehaviour
 {
-    public string serverIP = "80.64.24.133";
+    public string serverIP = "95.174.94.135";
     public int serverPort = 8000;
 
 
@@ -35,7 +35,7 @@ public class Gen_image_AI : MonoBehaviour
             yield break;
         }
 
-        string url = $"http://{serverIP}:{serverPort}/generate";
+        string url = $"http://95.174.94.135:8000/generate";
         Debug.Log(">>> Отправка запроса на: " + url);
 
         var req = new GenerateRequest { prompt = prompt };
@@ -55,15 +55,15 @@ public class Gen_image_AI : MonoBehaviour
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("❌ Ошибка генерации: " + www.error);
+                Debug.LogError(" Ошибка генерации: " + www.error);
                 if (!string.IsNullOrEmpty(www.downloadHandler.text))
-                    Debug.LogError("📄 Ответ сервера: " + www.downloadHandler.text);
+                    Debug.LogError(" Ответ сервера: " + www.downloadHandler.text);
                 onCompleted?.Invoke(null);
                 yield break;
             }
 
             string responseJson = www.downloadHandler.text;
-            Debug.Log("✅ Ответ от сервера: " + responseJson);
+            Debug.Log(" Ответ от сервера: " + responseJson);
 
             GenerateResponse response = JsonUtility.FromJson<GenerateResponse>(responseJson);
 
@@ -86,27 +86,24 @@ public class Gen_image_AI : MonoBehaviour
 
                 if (tex.LoadImage(imageBytes))
                 {
-                    Debug.Log("✅ Изображение успешно загружено. Размер: " + tex.width + "x" + tex.height);
+                    Debug.Log(" Изображение успешно загружено. Размер: " + tex.width + "x" + tex.height);
                     SaveImage(tex, prompt);
                     onCompleted?.Invoke(tex);
                 }
                 else
                 {
-                    Debug.LogError("❌ Не удалось загрузить изображение из байтов.");
+                    Debug.LogError(" Не удалось загрузить изображение из байтов.");
                     onCompleted?.Invoke(null);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError("💥 Ошибка обработки изображения: " + e.Message);
+                Debug.LogError(" Ошибка обработки изображения: " + e.Message);
                 onCompleted?.Invoke(null);
             }
         }
     }
 
-    /// <summary>
-    /// Сохраняет изображение в надёжное место (работает в Editor и на всех платформах).
-    /// </summary>
     void SaveImage(Texture2D texture, string prompt)
     {
         try
@@ -121,11 +118,11 @@ public class Gen_image_AI : MonoBehaviour
             Directory.CreateDirectory(folderPath); // Создаёт всю цепочку папок
 
             File.WriteAllBytes(filePath, pngData);
-            Debug.Log("💾 Изображение сохранено: " + filePath);
+            Debug.Log(" Изображение сохранено: " + filePath);
         }
         catch (Exception e)
         {
-            Debug.LogError("📁 Ошибка сохранения файла: " + e.Message);
+            Debug.LogError(" Ошибка сохранения файла: " + e.Message);
         }
     }
 }
